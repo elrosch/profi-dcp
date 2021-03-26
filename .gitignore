@@ -1,0 +1,13 @@
+*.pyc
+*.log
+**/env/**
+**/venv/**
+.idea/
+dist/
+**.pytest_cache**
+**__pycache__/
+*.egg-info/
+tests/.coverage
+tests/results/
+*coverage.xml
+**/build/**
