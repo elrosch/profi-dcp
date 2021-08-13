@@ -145,6 +145,7 @@ class PcapWrapper:
     def __init__(self):
         """Create a new pcap wrapper object and load the underlying DLL"""
         self.win_pcap = WinPcap()
+        self.pcap = None
 
     def open(self, device_name, timeout_ms=100):
         """

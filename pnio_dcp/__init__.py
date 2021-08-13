@@ -11,7 +11,7 @@ try:  # try getting the installed version
 except PackageNotFoundError:
     try:  # if not installed, try getting the version from the git repository
         __version__ = setuptools_scm.get_version(root='..', relative_to=__file__)
-    except LookupError:  # otherwise the version cannot be determined and is set to unknown
+    except (LookupError, OSError):  # otherwise the version cannot be determined and is set to unknown
         __version__ = "unknown"
 
 from .pnio_dcp import DCP, Device, ResponseCode

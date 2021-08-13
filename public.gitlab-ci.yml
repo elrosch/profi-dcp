@@ -1,0 +1,40 @@
+pages:
+  tags:
+    - docker
+    - linux
+  image:
+    name: pandoc/alpine
+    entrypoint: ["/bin/sh", "-c"]
+  script:
+    - mkdir -p public
+    - echo '<meta name="google-site-verification" content="ooqaohCgAywtsa97hQcmfXVsc5ZlgQaKSnXvTkSSLGE" />' > header.html
+    - pandoc -f markdown -t html -s README.md -o public/index.html --metadata title="PNIO-DCP" --metadata keywords=python,dcp,profinet -H header.html
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]$/'
+      when: on_success
+      allow_failure: false
+    - when: manual
+      allow_failure: true
+
+deploy_pypi:
+  tags:
+    - docker
+    - linux
+  image: python
+  script:
+    - python -m pip install setuptools wheel twine
+    - python setup.py sdist bdist_wheel
+    - twine check dist/*
+    - twine upload dist/*.whl
+  artifacts:
+    paths:
+      - ./dist/*.whl
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]$/'
+      when: on_success
+      allow_failure: false
+    - when: manual
+      allow_failure: true
