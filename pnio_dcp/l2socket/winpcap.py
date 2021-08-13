@@ -93,6 +93,7 @@ class WinPcap:
     Wrapper class for (a subset of) pcap. See e.g. https://www.winpcap.org/docs/docs_412/html/main.html for a more
     detailed documentation of the underlying functionality.
     """
+
     def __init__(self):
         """Create a new WinPcap object, load the WinPcap or Npcap DLL and export the necessary functions"""
         self.__load_pcap_dll()
@@ -104,7 +105,7 @@ class WinPcap:
         Will raise an OSError if neither WinPcap nor Npcap can be found.
         """
         if self.__pcap_dll is None:
-            npcap_path = pathlib.Path(os.environ["WINDIR"], "System32", "Npcap2")
+            npcap_path = pathlib.Path(os.environ["WINDIR"], "System32", "Npcap")
             if npcap_path.exists():
                 os.environ['PATH'] = f"{npcap_path};{os.environ['PATH']}"
                 load_dll("Packet")
@@ -137,7 +138,7 @@ class WinPcap:
 
         self._pcap_next_ex = self.__pcap_dll.pcap_next_ex
         self._pcap_next_ex.argtypes = [ctypes.POINTER(pcap_t), ctypes.POINTER(ctypes.POINTER(pcap_pkthdr)),
-                                  ctypes.POINTER(ctypes.POINTER(u_char))]
+                                       ctypes.POINTER(ctypes.POINTER(u_char))]
         self._pcap_next_ex.restype = ctypes.c_int
 
         self._pcap_sendpacket = self.__pcap_dll.pcap_sendpacket
@@ -145,7 +146,8 @@ class WinPcap:
         self._pcap_sendpacket.restype = ctypes.c_int
 
         self._pcap_compile = self.__pcap_dll.pcap_compile
-        self._pcap_compile.argtypes = [ctypes.POINTER(pcap_t), ctypes.POINTER(bpf_program), c_string, ctypes.c_int, bpf_u_int32]
+        self._pcap_compile.argtypes = [ctypes.POINTER(pcap_t), ctypes.POINTER(bpf_program), c_string, ctypes.c_int,
+                                       bpf_u_int32]
         self._pcap_compile.restype = ctypes.c_int
 
         self._pcap_setfilter = self.__pcap_dll.pcap_setfilter
@@ -232,15 +234,15 @@ class WinPcap:
         """
         return self._pcap_sendpacket(p, buf, size)
 
-    def pcap_compile(self, p, fp, str, optimize=0, netmask=-1):
+    def pcap_compile(self, p, fp, filter_string, optimize=0, netmask=-1):
         """
         Compile he given packet filter into a bpf filter program.
         :param p: The pcap object.
         :type p: POINTER(pcap_t)
         :param fp: A reference to the bpf filter program, filled in by pcap_compile()
         :type fp: bpf_program
-        :param str: The filter expression to compile.
-        :type str: string
+        :param filter_string: The filter expression to compile.
+        :type filter_string: string
         :param optimize: Whether the resulting filter program should be optimized.
         :type optimize: int
         :param netmask: Only used to check for IPv4 broadcast addresses in the filter program. See official Pcap
@@ -249,7 +251,7 @@ class WinPcap:
         :return: -1 on error (0 on success?)
         :rtype: int
         """
-        filter_buffer = ctypes.create_string_buffer(str.encode("utf8"))
+        filter_buffer = ctypes.create_string_buffer(filter_string.encode("utf8"))
         return self._pcap_compile(p, fp, filter_buffer, optimize, netmask)
 
     def pcap_setfilter(self, p, fp):

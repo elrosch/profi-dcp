@@ -23,7 +23,7 @@ def pcap_available():
     try:
         PcapWrapper()
         return True
-    except OSError:
+    except (OSError, KeyError):
         return False
 
 
