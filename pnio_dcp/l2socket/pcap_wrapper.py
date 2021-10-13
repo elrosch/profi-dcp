@@ -6,6 +6,7 @@ License: MIT License see LICENSE.md in the pnio_dcp root directory.
 from collections import namedtuple
 
 from pnio_dcp.l2socket.winpcap import WinPcap, bpf_program, pcap_pkthdr, pcap_if, sockaddr_in, sockaddr_in6
+from pnio_dcp.util import logger
 import ctypes
 import socket
 import ipaddress
@@ -175,13 +176,14 @@ class PcapWrapper:
                     return True
             return False
 
-        devices = self.get_all_devices()
-        devices = [device for device in devices if filter_by_ip(device)]
+        all_devices = self.get_all_devices()
+        filtered_devices = [device for device in all_devices if filter_by_ip(device)]
 
-        if not devices:
+        if not filtered_devices:
+            logger.debug(f"No pcap device with ip {ip} found in {[str(device) for device in all_devices]}")
             return None
         else:
-            return devices[0].name
+            return filtered_devices[0].name
 
     def get_all_devices(self):
         """

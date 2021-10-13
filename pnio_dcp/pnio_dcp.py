@@ -3,7 +3,6 @@ Copyright (c) 2020 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
 License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
-import logging
 import random
 import re
 import socket
@@ -27,7 +26,7 @@ except AttributeError:
     except AttributeError:
         AF_LINK = -1
 
-logger = logging.getLogger(__name__)
+logger = util.logger
 
 
 class Device:

@@ -13,7 +13,7 @@ from mock_return import MockReturn
 @pytest.fixture(scope='function')
 def l2_socket():
     """Open a L2PcapSocket on the first valid IPv4 address. Close the socket afterwards."""
-    ip = TestPcapSocket.get_ip()
+    ip = get_ip()
     l2_socket = L2PcapSocket(ip)
     yield l2_socket
     l2_socket.close()
@@ -27,29 +27,29 @@ def pcap_available():
         return False
 
 
+def get_ip(address_family=socket.AF_INET):
+    """
+    Get the first valid IP address of the given address family (that is not a loop-back address).
+    :param address_family: The address family, e.g. socket.AF_INET for IPv4 oder socket.AF_INET6 for IPv6.
+    :type address_family: int
+    :return: The first valid IP address found by psutil.
+    :rtype: string
+    """
+    localhost = ['127.0.0.1', '::1']
+    addrs = psutil.net_if_addrs()
+    for iface_name, config in addrs.items():
+        for address in config:
+            if address.family == address_family and address.address not in localhost:
+                logging.info(f"Using ip {address.address} for socket tests.")
+                return address.address
+    logging.warning("Could not find valid ip address with psutil.net_if_addrs()")
+
+
 @pytest.mark.skipif(not pcap_available(), reason="Could not find Pcap")
 class TestPcapSocket:
     """Test the custom Pcap-based L2-Socket"""
 
     timeout = 10
-
-    @staticmethod
-    def get_ip(address_family=socket.AF_INET):
-        """
-        Get the first valid IP address of the given address family (that is not a loop-back address).
-        :param address_family: The address family, e.g. socket.AF_INET for IPv4 oder socket.AF_INET6 for IPv6.
-        :type address_family: int
-        :return: The first valid IP address found by psutil.
-        :rtype: string
-        """
-        localhost = ['127.0.0.1', '::1']
-        addrs = psutil.net_if_addrs()
-        for iface_name, config in addrs.items():
-            for address in config:
-                if address.family == address_family and address.address not in localhost:
-                    logging.info(f"Using ip {address.address} for socket tests.")
-                    return address.address
-        logging.warning("Could not find valid ip address with psutil.net_if_addrs()")
 
     def test_load_dll_twice(self):
         """
@@ -68,7 +68,7 @@ class TestPcapSocket:
         Test opening and closing the Pcap-based socket with an IPv4 address.
         Expected results: no errors.
         """
-        ip = TestPcapSocket.get_ip()
+        ip = get_ip()
 
         l2_socket = L2PcapSocket(ip)
         l2_socket.close()
@@ -78,11 +78,20 @@ class TestPcapSocket:
         Test opening and closing the Pcap-based socket with an IPv6 address.
         Expected results: no errors.
         """
-        ip = TestPcapSocket.get_ip(socket.AF_INET6)
+        ip = get_ip(socket.AF_INET6)
         print(ip)
 
         l2_socket = L2PcapSocket(ip)
         l2_socket.close()
+
+    def test_open_invalid_ip(self):
+        """
+        Test opening the Pcap-based socket with an invalid ip address.
+        Expected results: L2PcapSocket raises a ValueError.
+        """
+        invalid_ip = '192.0.2.0'
+        with pytest.raises(ValueError):
+            l2_socket = L2PcapSocket(invalid_ip)
 
     def test_send(self, l2_socket):
         """
@@ -133,7 +142,7 @@ class TestPcapSocket:
         mock_return = MockReturn()
         mock_return.dst_custom = mock_return.dst[0]
 
-        ip = TestPcapSocket.get_ip()
+        ip = get_ip()
         filter = f"ether host {mock_return.src} and ether proto {mock_return.eth_type}"
         valid_data = mock_return.identify_response('IDENTIFY')[0]
         invalid_data = bytes([0] * 64)

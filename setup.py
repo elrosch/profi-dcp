@@ -1,9 +1,33 @@
-from setuptools import setup, find_packages
 import pathlib
 
+from setuptools import setup, find_packages
 
 readme = pathlib.Path(__file__).parent / "README.md"
 
+classifiers = [
+                  'Development Status :: 5 - Production/Stable',
+
+                  'Intended Audience :: Developers',
+                  'Intended Audience :: Information Technology',
+                  'Intended Audience :: System Administrators',
+                  'Intended Audience :: Telecommunications Industry',
+
+                  'Topic :: Software Development :: Libraries',
+                  'Topic :: Software Development :: Libraries :: Python Modules',
+                  'Topic :: System :: Networking',
+
+                  'Operating System :: Microsoft :: Windows',
+                  'Operating System :: POSIX :: Linux',
+
+                  'License :: OSI Approved :: MIT License',
+
+                  'Programming Language :: Python :: 3',
+                  'Programming Language :: Python :: 3.6',
+                  'Programming Language :: Python :: 3.7',
+                  'Programming Language :: Python :: 3.8',
+                  'Programming Language :: Python :: 3.9',
+                  'Programming Language :: Python :: 3.10',
+              ],
 
 setup(name="pnio_dcp",
       use_scm_version={"local_scheme": "no-local-version"},
@@ -19,4 +43,6 @@ setup(name="pnio_dcp",
       packages=find_packages(),
       install_requires=['psutil', 'setuptools_scm', 'importlib_metadata'],
       extras_require={'test': ['pytest']},
+      python_requires='>=3.6',
+      classifiers=classifiers,
       zip_safe=False)
