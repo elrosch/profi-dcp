@@ -4,7 +4,11 @@ All Rights Reserved.
 License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
 import binascii
+import logging
 import socket
+
+
+logger = logging.getLogger("pnio_dcp")
 
 
 def mac_address_to_bytes(mac_address):

@@ -21,6 +21,8 @@ class L2PcapSocket:
         """
         self.pcap = PcapWrapper()
         pcap_device_name = self.pcap.get_device_name_from_ip(ip)
+        if not pcap_device_name:
+            raise ValueError(f"No pcap network interface for ip {ip} found.")
         self.pcap.open(pcap_device_name)
         if bpf_filter:
             self.pcap.set_bpf_filter(bpf_filter)

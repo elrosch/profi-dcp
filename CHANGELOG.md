@@ -10,3 +10,8 @@
 * Internal refactoring and improvement of code quality
     * completely rewrite packet data structures
     * improve names of internal functions and member variables
+
+## Version 1.1.1: Improved Error Handling and Logging
+* Switch to package-wide logging namespace instead of by file
+* Improve error handling for invalid ip addresses
+* Add test for invalid ips and stress test for initialization
