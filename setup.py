@@ -27,7 +27,7 @@ classifiers = [
                   'Programming Language :: Python :: 3.8',
                   'Programming Language :: Python :: 3.9',
                   'Programming Language :: Python :: 3.10',
-              ],
+              ]
 
 setup(name="pnio_dcp",
       use_scm_version={"local_scheme": "no-local-version"},
