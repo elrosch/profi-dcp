@@ -15,3 +15,6 @@
 * Switch to package-wide logging namespace instead of by file
 * Improve error handling for invalid ip addresses
 * Add test for invalid ips and stress test for initialization
+
+## Version 1.1.2: Hotfix for PyPI Deployment
+* fix PyPI classifier format
