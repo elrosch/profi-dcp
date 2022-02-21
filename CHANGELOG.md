@@ -17,4 +17,8 @@
 * Add test for invalid ips and stress test for initialization
 
 ## Version 1.1.2: Hotfix for PyPI Deployment
-* fix PyPI classifier format
+* Fix PyPI classifier format
+
+## Version 1.1.3: Hotfix for Cross-Platform MAC Address Inference and Reduced Verbosity
+* Use `psutil.AF_LINK` to filter the response of `psutil.net_if_addrs()` instead of using a workaround to determine it for cross-platform use.
+* Remove logging output when ignoring packets with unexpected XIDs as can result in significant log volume even though no user action is required. 
