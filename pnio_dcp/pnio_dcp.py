@@ -17,15 +17,6 @@ from pnio_dcp.error import DcpTimeoutError
 from pnio_dcp.l2socket import L2Socket
 from pnio_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest
 
-# Set AF_LINK to -1 if undefined (for compatibility with psutil on Windows)
-try:
-    AF_LINK = socket.AF_LINK
-except AttributeError:
-    try:
-        AF_LINK = socket.AF_PACKET
-    except AttributeError:
-        AF_LINK = -1
-
 logger = util.logger
 
 
@@ -96,11 +87,11 @@ class DCP:
             ipv6_match = any(address.address.startswith(ip) for address in addresses_by_family.get(socket.AF_INET6, []))
 
             if ipv4_match or ipv6_match:
-                if not addresses_by_family.get(AF_LINK, False):
+                if not addresses_by_family.get(psutil.AF_LINK, False):
                     logger.warning(f"Found network interface matching the ip {ip} but no corresponding mac address "
-                                   f"with AF_LINK = {AF_LINK}")
+                                   f"with AF_LINK = {psutil.AF_LINK}")
                     continue
-                mac_address = addresses_by_family[AF_LINK][0].address
+                mac_address = addresses_by_family[psutil.AF_LINK][0].address
                 return mac_address.replace('-', ':').lower(), network_interface
         logger.debug(f"Could not find a network interface for ip {ip} in {psutil.net_if_addrs()}")
         raise ValueError(f"Could not find a network interface for ip {ip}.")
@@ -405,8 +396,6 @@ class DCP:
 
         dcp_packet = DCPPacket(data=ethernet_packet.payload)
         valid_dcp = dcp_packet.service_type == ServiceType.RESPONSE and dcp_packet.xid == self.__xid
-        if dcp_packet.xid != self.__xid:
-            logger.debug(f"Ignoring valid DCP packet with incorrect XID: {hex(dcp_packet.xid)} != {hex(self.__xid)}")
 
         return dcp_packet if valid_ethernet and valid_dcp else None
 

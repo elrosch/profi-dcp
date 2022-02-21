@@ -3,9 +3,9 @@ import random
 import pnio_dcp.protocol
 import pnio_dcp.util
 import pnio_dcp.dcp_constants
-from pnio_dcp.pnio_dcp import AF_LINK
 from collections import namedtuple
 import socket
+import psutil
 
 
 snicaddr = namedtuple("snicaddr", ["family", "address", "netmask", "broadcast", "ptp"])
@@ -25,7 +25,7 @@ class MockDevice:
 
 
 class MockReturn:
-    testnetz = {'Testnetz': [snicaddr(AF_LINK, '00-50-56-AC-DD-2E', None, None, None),
+    testnetz = {'Testnetz': [snicaddr(psutil.AF_LINK, '00-50-56-AC-DD-2E', None, None, None),
                              snicaddr(socket.AF_INET, '10.0.2.124', '255.255.240.0', None, None)]}
     src = '00:50:56:ac:dd:2e'
     dst = ['00:0c:29:66:47:a5', '00:0e:8c:e5:3c:58', '00:e0:7c:c8:72:58', '40:ec:f8:04:bf:5e', '40:ec:f8:03:b7:df']
