@@ -2,7 +2,7 @@ import pnio_dcp
 import pytest
 import time
 
-from test_socket import pcap_available, get_ip
+from util import pcap_available, get_ip
 
 
 @pytest.mark.skip

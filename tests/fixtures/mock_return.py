@@ -6,6 +6,7 @@ import pnio_dcp.dcp_constants
 from collections import namedtuple
 import socket
 import psutil
+import pytest
 
 
 snicaddr = namedtuple("snicaddr", ["family", "address", "netmask", "broadcast", "ptp"])
@@ -38,7 +39,9 @@ class MockReturn:
                '00:0e:8c:e5:3c:58': MockDevice('spsw-11', '00:0e:8c:e5:3c:58', ['10.0.0.30', '255.255.240.0', '10.0.0.1'], random.choice([b'01', b'02', b'03']), "SPSW"),
                '00:e0:7c:c8:72:58': MockDevice('cwl-r90g66zd', '00:e0:7c:c8:72:58', ['10.0.4.53', '255.255.240.0', '10.0.0.1'], b'00', "CWL"),
                '40:ec:f8:04:bf:5e': MockDevice('sibasxx', '40:ec:f8:04:bf:5e', ['10.0.0.120', '255.255.240.0', '10.0.0.1'], random.choice([b'03', b'04', b'05']), "Sibas PN"),
-               '40:ec:f8:03:b7:df': MockDevice('cp1604-11', '40:ec:f8:03:b7:df', ['10.0.0.20', '255.255.240.0', '10.0.0.1'], random.choice([b'04', b'05', b'06']), "CP16")}
+               '40:ec:f8:03:b7:df': MockDevice('cp1604-11', '40:ec:f8:03:b7:df', ['10.0.0.20', '255.255.240.0', '10.0.0.1'], random.choice([b'04', b'05', b'06']), "CP16"),
+               '02:00:00:00:00:01': MockDevice('loop-dev1', '02:00:00:00:00:01', ['10.0.0.20', '255.255.240.0', '10.0.0.1'], b'00', "Loopback"),
+               '02:00:00:00:00:02': MockDevice('loop-dev2', '02:00:00:00:00:02', ['10.0.0.20', '255.255.240.0', '10.0.0.1'], b'00', "Loopback")}
     block = None
     xid = 0x7010052
 
@@ -137,3 +140,7 @@ class MockReturn:
         dcp = pnio_dcp.protocol.DCPPacket(self.frame_id, self.service_id, self.service_type, self.xid, 0x0000, len(self.block), payload=self.block)
         eth = pnio_dcp.protocol.EthernetPacket(self.src, self.dst_custom, self.eth_type, payload=dcp)
         return [bytes(eth)]
+
+@pytest.fixture(scope='function')
+def mock_return():
+    return MockReturn()

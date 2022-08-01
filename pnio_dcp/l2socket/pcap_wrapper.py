@@ -10,6 +10,7 @@ from pnio_dcp.util import logger
 import ctypes
 import socket
 import ipaddress
+import time
 
 IPv4Address = namedtuple("IPv4Address", ["port", "ip_address"])
 IPv6Address = namedtuple("IPv6Address", ["port", "flow_info", "ip_address", "scope_id"])
@@ -246,8 +247,32 @@ class PcapWrapper:
         :return: Whether the packet was send successfully.
         :rtype: boolean
         """
+        self.__empty_buffer()
         return self.win_pcap.pcap_sendpacket(self.pcap, packet, len(packet)) == 0
 
     def close(self):
         """Close this pcap capture."""
         self.win_pcap.pcap_close(self.pcap)
+
+    def __empty_buffer(self, timeout=0.5):
+        """
+        Empties the pcap receive buffer with multiple calls to get_next_packet() until the buffer is
+        empty or the timeout (default 0.5s) occurs.
+        Emptying the pcap receive buffer is necessary before sending packets to prevent the awaited
+        answer packet from being dropped due to the full buffer.
+        :param timeout: Time, after which the function returns, even if the buffer is not completely empty
+        :type timeout: integer
+        """ 
+        try:
+            timed_out = time.time() + timeout
+            while time.time() < timed_out:
+                try:
+                    received_packet = self.get_next_packet()
+                except socket.timeout:
+                    return
+
+                if not received_packet:
+                    return
+
+        except TimeoutError:
+            pass
