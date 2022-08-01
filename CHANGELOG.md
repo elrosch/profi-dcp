@@ -22,3 +22,9 @@
 ## Version 1.1.3: Hotfix for Cross-Platform MAC Address Inference and Reduced Verbosity
 * Use `psutil.AF_LINK` to filter the response of `psutil.net_if_addrs()` instead of using a workaround to determine it for cross-platform use.
 * Remove logging output when ignoring packets with unexpected XIDs as can result in significant log volume even though no user action is required. 
+
+## Version 1.1.4: Resolved Issue that led to Packets being dropped
+* The issue was caused by the pcap-buffer being full in environments with lots of network traffic
+* Pcap filter is now set correctly
+* Pcap buffer will be emptied before sending a packet
+* Improved file structure in `tests/` directory

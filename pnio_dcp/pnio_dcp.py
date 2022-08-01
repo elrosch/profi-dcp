@@ -63,7 +63,7 @@ class DCP:
         # processed by python. This solves issues in high traffic networks, as otherwise packets might be missed under
         # heavy load when python is not fast enough processing them.
         socket_filter = f"ether host {self.src_mac} and ether proto {dcp_constants.ETHER_TYPE}"
-        self.__socket = L2Socket(ip=ip, interface=network_interface, filter=socket_filter,
+        self.__socket = L2Socket(ip=ip, interface=network_interface, bpf_filter=socket_filter,
                                  protocol=dcp_constants.ETHER_TYPE)
 
     @staticmethod
