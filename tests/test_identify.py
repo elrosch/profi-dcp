@@ -10,7 +10,7 @@ class TestDCPIdentify:
         instance_dcp, socket = instance_dcp
 
         valid_responses = mock_return.identify_response('IDENTIFY_ALL', xid=instance_dcp._DCP__xid + 1)
-        recv_return_value = itertools.chain(valid_responses, itertools.cycle([TimeoutError]))
+        recv_return_value = itertools.chain(valid_responses, itertools.cycle([None]))
         socket().recv.return_value = recv_return_value
         socket().recv.side_effect = socket().recv.return_value
 
@@ -31,7 +31,7 @@ class TestDCPIdentify:
 
     def test_identify_all_devices_no_responses_returns_empty_list(self, instance_dcp):
         instance_dcp, socket = instance_dcp
-        socket().recv.side_effect = timeout
+        socket().recv.return_value = None
 
         devices = instance_dcp.identify_all()
 
@@ -56,7 +56,7 @@ class TestDCPIdentify:
 
     def test_identify_device_no_response_raises_timeout(self, mock_return, instance_dcp):
         instance_dcp, socket = instance_dcp
-        socket().recv.side_effect = timeout
+        socket().recv.return_value = None
         device_mac = mock_return.dst[0]
 
         with pytest.raises(pnio_dcp.DcpTimeoutError):
