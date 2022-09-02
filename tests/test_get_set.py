@@ -1,5 +1,4 @@
 import pytest
-from socket import timeout
 from pnio_dcp import DcpTimeoutError
 
 
@@ -21,7 +20,7 @@ class TestDCPGetSet:
         instance_dcp, socket = instance_dcp
         device_mac = mock_return.dst[0]
         mock_return.dst_custom = device_mac
-        socket().recv.side_effect = timeout
+        socket().recv.return_value = None
 
         with pytest.raises(DcpTimeoutError):
             instance_dcp.get_ip_address(device_mac)
@@ -42,7 +41,7 @@ class TestDCPGetSet:
         instance_dcp, socket = instance_dcp
         device_mac = mock_return.dst[0]
         mock_return.dst_custom = device_mac
-        socket().recv.side_effect = timeout
+        socket().recv.return_value = None
 
         with pytest.raises(DcpTimeoutError):
             instance_dcp.get_name_of_station(device_mac)
@@ -64,7 +63,7 @@ class TestDCPGetSet:
         instance_dcp, socket = instance_dcp
         device_mac = mock_return.dst[0]
         mock_return.dst_custom = device_mac
-        socket().recv.side_effect = timeout
+        socket().recv.return_value = None
 
         with pytest.raises(DcpTimeoutError):
             instance_dcp.set_ip_address(device_mac, ['127.0.0.1', '255.255.255.0', '0.0.0.0'])
@@ -86,7 +85,7 @@ class TestDCPGetSet:
         instance_dcp, socket = instance_dcp
         device_mac = mock_return.dst[0]
         mock_return.dst_custom = device_mac
-        socket().recv.side_effect = timeout
+        socket().recv.return_value = None
 
         with pytest.raises(DcpTimeoutError):
             instance_dcp.set_name_of_station(device_mac, 'test-name-of-station')

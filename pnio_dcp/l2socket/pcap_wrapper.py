@@ -263,16 +263,9 @@ class PcapWrapper:
         :param timeout: Time, after which the function returns, even if the buffer is not completely empty
         :type timeout: integer
         """ 
-        try:
-            timed_out = time.time() + timeout
-            while time.time() < timed_out:
-                try:
-                    received_packet = self.get_next_packet()
-                except socket.timeout:
-                    return
+        timed_out = time.time() + timeout
+        while time.time() < timed_out:
+            received_packet = self.get_next_packet()
 
-                if not received_packet:
-                    return
-
-        except TimeoutError:
-            pass
+            if not received_packet:
+                return

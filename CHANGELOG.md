@@ -28,3 +28,6 @@
 * Pcap filter is now set correctly
 * Pcap buffer will be emptied before sending a packet
 * Improved file structure in `tests/` directory
+
+## Verison 1.1.5: Removed unnecessary code
+* Removed a catch for an exception that will never occur

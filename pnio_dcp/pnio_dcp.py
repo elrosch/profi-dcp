@@ -305,20 +305,14 @@ class DCP:
         :rtype: Optional[Union[Device, ResponseCode]]
         """
         timeout = self.default_timeout if timeout is None else timeout
-        try:
-            timed_out = time.time() + timeout
-            while time.time() < timed_out:
-                try:
-                    received_packet = self.__receive_packet()
-                except socket.timeout:
-                    continue
+        timed_out = time.time() + timeout
+        while time.time() < timed_out:
+            received_packet = self.__receive_packet()
 
-                if received_packet:
-                    parsed_response = self.__parse_raw_packet(received_packet, set_request)
-                    if parsed_response is not None:
-                        return parsed_response
-        except TimeoutError:
-            pass
+            if received_packet:
+                parsed_response = self.__parse_raw_packet(received_packet, set_request)
+                if parsed_response is not None:
+                    return parsed_response
 
     def __receive_packet(self):
         """
