@@ -199,7 +199,7 @@ class DCPPacket(Packet):
     ]
 
     def __init__(self, frame_id=None, service_id=None, service_type=None, xid=None,
-                 response_delay=dcp_constants.RESPONSE_DELAY, length=None, payload=0, data=None):
+                 response_delay=0, length=None, payload=0, data=None):
         """
         Create a new DCP packet. If data is given, the packets is initialized by unpacking the data. Otherwise, the
         payload and header fields are initialized from the remaining arguments.
@@ -211,7 +211,7 @@ class DCPPacket(Packet):
         :type service_type: int
         :param xid: The xid, used to identify the transaction.
         :type xid: int
-        :param response_delay: The response delay, default is specified in pnio_dcp.dcp_constants.RESPONSE_DELAY.
+        :param response_delay: The response delay, default is 0, should be set only for multi-cast requests like identify all.
         :type response_delay: int
         :param length: The length of the DCP data in the payload. Computed automatically from the provided payload if
         not specified.

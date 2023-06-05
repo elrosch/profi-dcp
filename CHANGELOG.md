@@ -31,3 +31,7 @@
 
 ## Verison 1.1.5: Removed unnecessary code
 * Removed a catch for an exception that will never occur
+
+## Version 1.1.6: Device Flash support and Fix
+* Added the profinet flash once command (lets the LEDs of a device blink to help identifying it physically): `dcp.blink(mac_address)`
+* The response-delay field for DCP uni-cast packets (eg. get/set) is now always set to `0`, as a response-delay is only valid for multi-cast packets (eg. identify_all)
