@@ -80,6 +80,12 @@ name_of_station = dcp.get_name_of_station(mac_address)
 ```
 to get its name of station.
 
+### Blink LED Request
+This request can be used to identify a device with a given MAC-Address physically. After the request is send the device will flash its LEDs. Usage:
+```python
+dcp.blink(mac_address)
+```
+
 ### Reset Requests
 
 The communication parameters of the device with the MAC address `mac_address` can be reset to the factory settings with
@@ -91,4 +97,4 @@ dcp.reset_to_factory(mac_address)
 
 This project is licensed under the MIT license.
 
-MIT © 2020-2021 Codewerk GmbH, Karlsruhe
+MIT © 2020-2022 Codewerk GmbH, Karlsruhe

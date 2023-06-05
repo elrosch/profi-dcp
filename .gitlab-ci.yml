@@ -1,7 +1,6 @@
 include:
   - project: 'shacks/python/pyshacks_ci_config'
     file: 'pyshack.gitlab-ci.yml'
-  - local: 'public.gitlab-ci.yml'
 
 default:
     tags:
@@ -14,11 +13,4 @@ stages:
   - tests
   - analyse
   - deploy
-  - pages
-  - pypi
 
-pages:
-  stage: pages
-
-deploy_pypi:
-  stage: pypi

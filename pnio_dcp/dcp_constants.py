@@ -10,6 +10,8 @@ PROFINET_MULTICAST_MAC_IDENTIFY = '01:0e:cf:00:00:00'
 RESPONSE_DELAY = 0x0080
 # Ether type of DCP packets
 ETHER_TYPE = 0x8892
+# Value for letting the LED blink
+LED_BLINK_VALUE = [0x01, 0x00]
 
 
 class FrameID:
@@ -24,6 +26,8 @@ class BlockQualifier:
     STORE_PERMANENT = [0x00, 0x01]
     # Reset to factory with mode communication
     RESET_COMMUNICATION = [0x00, 0x04]
+    # Used for ControlOption with Suboption other than SuboptionResetToFactory (eg. when flashing LED)
+    RESERVED = [0x00, 0x00]
 
 
 class ServiceType:
@@ -45,5 +49,6 @@ class Option:
     DEVICE_FAMILY = (2, 1)
     NAME_OF_STATION = (2, 2)
     DEVICE_ID = (2, 3)
+    BLINK_LED = (5, 3)
     RESET_TO_FACTORY = (5, 6)
     ALL = (0xFF, 0xFF)

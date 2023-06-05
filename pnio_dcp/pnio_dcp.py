@@ -107,7 +107,8 @@ class DCP:
         """
         dst_mac = dcp_constants.PROFINET_MULTICAST_MAC_IDENTIFY
         option, suboption = Option.ALL
-        self.__send_request(dst_mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY, option, suboption)
+        response_delay = dcp_constants.RESPONSE_DELAY
+        self.__send_request(dst_mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY, option, suboption, response_delay=response_delay)
 
         # Receive all responses until the timeout occurs
         timeout = self.identify_all_timeout if timeout is None else timeout
@@ -129,7 +130,8 @@ class DCP:
         :rtype: Device
         """
         option, suboption = Option.ALL
-        self.__send_request(mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY, option, suboption)
+        response_delay = dcp_constants.RESPONSE_DELAY
+        self.__send_request(mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY, option, suboption, response_delay=response_delay)
 
         response = self.__read_response()
         if not response:
@@ -231,6 +233,31 @@ class DCP:
             raise DcpTimeoutError
         return response.name_of_station
 
+    def blink(self, mac):
+        """
+        Send a request to let the led of the device with the given mac address flash.
+        :param mac: mac address of the target device (as ':' separated string)
+        :type mac: string
+        :return: The response code to the request. Evaluates to false if the request failed. Use get_message() to get
+        a human-readable response message.
+        :rtype: ResponseCode
+        """
+        # Construct the DCPBlockRequest
+        value = bytes(BlockQualifier.RESERVED)
+        value += bytes(dcp_constants.LED_BLINK_VALUE)
+        option, suboption = Option.BLINK_LED
+        self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
+
+        response = self.__read_response(set_request=True)
+
+        if response is None:
+            logger.debug(f"Timeout: no answer from device with MAC {mac} to reset request.")
+            raise DcpTimeoutError
+        elif not response:
+            logger.debug(f"LED flashing unsuccessful: {response.get_message()}")
+
+        return response
+
     def reset_to_factory(self, mac):
         """
         Send a request to reset the communication parameters of the device with the given mac address to its factory
@@ -255,7 +282,7 @@ class DCP:
 
         return response
 
-    def __send_request(self, dst_mac, frame_id, service, option, suboption, value=None):
+    def __send_request(self, dst_mac, frame_id, service, option, suboption, value=None, response_delay=0):
         """
         Send a DCP request with the given option and sub-option and an optional payload (the given value)
         :param dst_mac: The mac address to send the to (as ':' separated string).
@@ -270,6 +297,8 @@ class DCP:
         :type suboption: int
         :param value: The DCP payload data to send, only used in 'set' functions
         :type value: bytes
+        :param response_delay: Used for multi-cast requests (eg. identify_all), must be 0 for all unicast-requests
+        :type response_delay: int
         """
         self.__xid += 1  # increment the XID wih each request (used to identify a transaction)
 
@@ -279,7 +308,7 @@ class DCP:
 
         # Create DCP frame
         service_type = ServiceType.REQUEST
-        dcp_packet = DCPPacket(frame_id, service, service_type, self.__xid, payload=block)
+        dcp_packet = DCPPacket(frame_id, service, service_type, self.__xid, response_delay=response_delay, payload=block)
 
         # Create ethernet frame
         ethernet_packet = EthernetPacket(dst_mac, self.src_mac, dcp_constants.ETHER_TYPE, payload=dcp_packet)
