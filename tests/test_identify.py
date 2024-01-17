@@ -5,8 +5,14 @@ from socket import timeout
 
 
 class TestDCPIdentify:
+    """
+    Test the identify and identify_all functions of the lib.
+    """
 
     def test_identify_all_devices(self, mock_return, instance_dcp):
+        """
+        Test identify_all with respone from device.
+        """
         instance_dcp, socket = instance_dcp
 
         valid_responses = mock_return.identify_response('IDENTIFY_ALL', xid=instance_dcp._DCP__xid + 1)
@@ -30,6 +36,9 @@ class TestDCPIdentify:
         assert macs_identified == mock_return.dst
 
     def test_identify_all_devices_no_responses_returns_empty_list(self, instance_dcp):
+        """
+        Test no devices responding to identify_all.
+        """
         instance_dcp, socket = instance_dcp
         socket().recv.return_value = None
 
@@ -38,6 +47,9 @@ class TestDCPIdentify:
         assert len(devices) == 0
 
     def test_identify_device(self, mock_return, instance_dcp):
+        """
+        Test identify with response from device.
+        """
         instance_dcp, socket = instance_dcp
         for device_mac in mock_return.dst:
             mock_return.dst_custom = device_mac
@@ -55,6 +67,9 @@ class TestDCPIdentify:
             assert identified.family == mock_return.devices[device_mac].Family
 
     def test_identify_device_no_response_raises_timeout(self, mock_return, instance_dcp):
+        """
+        Test no response from device to identify
+        """
         instance_dcp, socket = instance_dcp
         socket().recv.return_value = None
         device_mac = mock_return.dst[0]

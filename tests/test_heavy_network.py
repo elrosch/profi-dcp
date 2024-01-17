@@ -10,6 +10,10 @@ from pnio_dcp.protocol import DCPBlockRequest, DCPPacket, EthernetPacket
 from util import get_ip, pcap_available
 
 def create_request(src_mac, dst_mac, service_id, options, xid):
+    """
+    Build the raw packet for a dcp request. This function is implemented
+    here so as not to rely on the implementation in the dcp-lib.
+    """
     option, suboption = options
     block = DCPBlockRequest(option, suboption, payload=bytes())
 
@@ -26,6 +30,9 @@ def create_request(src_mac, dst_mac, service_id, options, xid):
     return ethernet_packet
 
 def thread_spam(socket, timeout, wait_time, data):
+    """
+    Send lot's of packets to the pcab buffer.
+    """
     packet_number = 0
     timed_out = time.time() + timeout
     while time.time() < timed_out:
@@ -38,6 +45,10 @@ def thread_spam(socket, timeout, wait_time, data):
     logging.info(f"Spam thread send {packet_number} packets ({(packet_number*len(data)):,} Bytes) in {timeout}s")
 
 def thread_answer(socket, timeout, data, expected_packet):
+    """
+    Simulate a device by reading from the socket and answering with data
+    after the expacted_packet has been received.
+    """
     # Start receive loop with timeout
     timed_out = time.time() + timeout
     while time.time() < timed_out:
@@ -58,6 +69,10 @@ def thread_answer(socket, timeout, data, expected_packet):
 
 @pytest.mark.skipif(not pcap_available(), reason="Could not find Pcap")
 class TestHeavyNetwork:
+    """
+    Test the behavior in conditions with a lot of network traffic when
+    using pcap.
+    """
     host_mac = '02:00:00:00:00:05'
     device_mac = '02:00:00:00:00:02'
     device_spam_mac = '02:00:00:00:00:01'
@@ -66,6 +81,10 @@ class TestHeavyNetwork:
 
     @pytest.mark.parametrize('n', range(4))
     def test_buffer_full_get_name(self, n, mock_return, loopback_sockets):
+        """
+        Fill the pcap buffer with packets and check if get_name_of_station
+        still works.
+        """
         # Get 2 sockets on the loopback adapter
         loopback_socket_1, loopback_socket_2 = loopback_sockets(2)
 
@@ -102,6 +121,10 @@ class TestHeavyNetwork:
 
     @pytest.mark.parametrize('n', range(4))
     def test_buffer_full_set_ip(self, n, mock_return, loopback_sockets):
+        """
+        Fill the pcap buffer with packets and check if set_ip_address
+        still works.
+        """
         # Get 2 sockets on the loopback adapter
         loopback_socket_1, loopback_socket_2 = loopback_sockets(2)
 
@@ -137,6 +160,9 @@ class TestHeavyNetwork:
         t_answer.join()
 
     def get_responses(self, mock_return, request, xid):
+        """
+        Create a dcp device response for get_name_of_station or get_ip_address.
+        """
         mock_return.src = self.host_mac
         mock_return.dst_custom = self.device_spam_mac
         response_spam = mock_return.identify_response('IDENTIFY', xid=0xffff)[0]

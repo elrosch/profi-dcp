@@ -1,7 +1,7 @@
 # Changelog
 
 ## Version 1.0.0: Initial Release
-* Python library for the Profinet Dynamic Configuration Protocol (DCP)
+* Python library for the Profinet Discovery and basic Configuration Protocol (DCP)
 * Send identify, get, set, and reset requests to DCP devices and receive the responses
 * Windows only
 
@@ -35,3 +35,12 @@
 ## Version 1.1.6: Device Flash support and Fix
 * Added the profinet flash once command (lets the LEDs of a device blink to help identifying it physically): `dcp.blink(mac_address)`
 * The response-delay field for DCP uni-cast packets (eg. get/set) is now always set to `0`, as a response-delay is only valid for multi-cast packets (eg. identify_all)
+
+## Version 1.2.0 Reset Factory Modes and Set with Temporary Option
+* Reset to factory (`dcp.reset_to_factory(mac_address, mode)`) supports different modes now
+* Added request `dcp.factory_reset(mac_address)`, which enables factory resets on older devices
+* Name of station and ip suite can be set temporarily  (until next reboot of device)
+* Fixed issue with network adapter descriptions on windows
+* Fixed additional suboption block for get requests
+* Removed waiting time after set requests
+* Corrected description to Profinet _Discovery_ and basic Configuration Protocol

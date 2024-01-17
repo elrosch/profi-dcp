@@ -29,7 +29,7 @@ build_package:
     - linux
   image: python
   script:
-    - python -m pip install setuptools wheel twine
+    - python -m pip install setuptools wheel
     - python setup.py sdist bdist_wheel
   artifacts:
     paths:
@@ -49,6 +49,7 @@ deploy_package:
     - linux
   image: python
   script:
+    - python -m pip install twine
     - twine check dist/*
     - twine upload dist/*.whl
   rules:

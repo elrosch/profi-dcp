@@ -16,3 +16,4 @@ except PackageNotFoundError:
 
 from .pnio_dcp import DCP, Device, ResponseCode
 from .error import DcpError, DcpTimeoutError
+from .dcp_constants import ResetFactoryModes

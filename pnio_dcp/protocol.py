@@ -245,7 +245,7 @@ class DCPPacket(Packet):
 
 
 class DCPBlockRequest(Packet):
-    """A DCP block packet for a DCP request."""
+    """A DCP block packet for a DCP request (excluded get-requests)."""
     HEADER_FIELD_FORMATS = [
         HeaderField("opt", "B"),
         HeaderField("subopt", "B"),
@@ -287,6 +287,28 @@ class DCPBlockRequest(Packet):
         """
         payload_end = self.header_length + self.length
         self.payload = data[self.header_length:payload_end]
+
+
+class DCPBlockRequestGet(Packet):
+    """A DCP block packet only for a DCP get-request."""
+    HEADER_FIELD_FORMATS = [
+        HeaderField("opt", "B"),
+        HeaderField("subopt", "B"),
+    ]
+
+    def __init__(self, opt=None, subopt=None):
+            """
+            Create a new DCP block for a DCP get-request packet. Header fields are initialized
+            from the given arguments.
+            :param opt: The DCP option.
+            :type opt: int
+            :param subopt: The DCP sub-option.
+            :type subopt: int
+            """
+            self.opt = None
+            self.subopt = None
+
+            super().__init__(opt=opt, subopt=subopt)
 
 
 class DCPBlock(Packet):

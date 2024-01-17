@@ -26,9 +26,19 @@ class BlockQualifier:
     STORE_PERMANENT = [0x00, 0x01]
     # Reset to factory with mode communication
     RESET_COMMUNICATION = [0x00, 0x04]
+    # Indicate that a value should be stored temporary (value will be discarded after power reset)
+    STORE_TEMPORARY  = [0x00, 0x00]
     # Used for ControlOption with Suboption other than SuboptionResetToFactory (eg. when flashing LED)
     RESERVED = [0x00, 0x00]
 
+class ResetFactoryModes:
+    """Reset to factory modes"""
+    RESET_APPLICATION_DATA = [0x00, 0x02]
+    RESET_COMMUNICATION = [0x00, 0x04]
+    RESET_ENGENEERING = [0x00, 0x06]
+    RESET_ALL_DATA = [0x00, 0x8]
+    RESET_DEVICE = [0x00, 0x10]
+    RESET_AND_RESTORE = [0x00, 0x12]
 
 class ServiceType:
     """Service type of a DCP packet"""
@@ -50,5 +60,6 @@ class Option:
     NAME_OF_STATION = (2, 2)
     DEVICE_ID = (2, 3)
     BLINK_LED = (5, 3)
+    RESET_FACTORY = (5, 5)
     RESET_TO_FACTORY = (5, 6)
     ALL = (0xFF, 0xFF)
