@@ -6,9 +6,15 @@ import pnio_dcp
 
 
 class TestInvalidInput:
+    """
+    Test the behavior for some invalid input.
+    """
 
     @patch('pnio_dcp.pnio_dcp.psutil')
     def test_init_with_invalid_ip(self, psutil, mock_return):
+        """
+        Test the init of the dcp class with invalid ip addresses.
+        """
         psutil.net_if_addrs.return_value = mock_return.testnetz
 
         invalid_ips = ["0.0.0.0",
@@ -21,6 +27,9 @@ class TestInvalidInput:
                 pnio_dcp.DCP(ip)
 
     def test_provide_invalid_ip(self, mock_return, instance_dcp):
+        """
+        Test set_ip_address with invalid ip suits.
+        """
         instance_dcp, socket = instance_dcp
         invalid_ip = [['260.0.270.31', '255.255.240.0', '10.0.0.1'],
                       ['10.0.0.30', '255..240.0', '10.0.0.1'],
@@ -40,6 +49,9 @@ class TestInvalidInput:
             assert exception_occured
 
     def test_provide_invalid_name(self, mock_return, instance_dcp):
+        """
+        Test set_name_of_station with invalid profinet names.
+        """
         instance_dcp, socket = instance_dcp
         test_device_mac = random.choice(mock_return.dst)
 

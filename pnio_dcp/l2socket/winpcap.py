@@ -87,12 +87,11 @@ def load_dll(library_name):
 
 
 class WinPcap:
-    __pcap_dll = None
-
     """
     Wrapper class for (a subset of) pcap. See e.g. https://www.winpcap.org/docs/docs_412/html/main.html for a more
     detailed documentation of the underlying functionality.
     """
+    __pcap_dll = None
 
     def __init__(self):
         """Create a new WinPcap object, load the WinPcap or Npcap DLL and export the necessary functions"""

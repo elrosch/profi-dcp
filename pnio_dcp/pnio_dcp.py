@@ -12,10 +12,10 @@ import psutil
 
 import pnio_dcp.dcp_constants as dcp_constants
 import pnio_dcp.util as util
-from pnio_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier
+from pnio_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier, ResetFactoryModes
 from pnio_dcp.error import DcpTimeoutError
 from pnio_dcp.l2socket import L2Socket
-from pnio_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest
+from pnio_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest, DCPBlockRequestGet
 
 logger = util.logger
 
@@ -43,6 +43,11 @@ class Device:
 
 
 class DCP:
+    """
+    The DCP-class provides access to the DCP-functions of this library. After an instance with
+    the ip address of the network adapter you want to use DCP on is created, DCP-functions are
+    available through this instance.
+    """
 
     def __init__(self, ip):
         """
@@ -54,7 +59,6 @@ class DCP:
 
         self.default_timeout = 7  # default timeout for requests (in seconds)
         self.identify_all_timeout = 7  # timeout to receive all responses for identify_all
-        self.waiting_time = 2  # time to wait between sending a set request and receiving the response
 
         # the XID is the id of the current transaction and can be used to identify the responses to a request
         self.__xid = int(random.getrandbits(32))  # initialize it with a random value
@@ -139,25 +143,30 @@ class DCP:
             raise DcpTimeoutError
         return response
 
-    def set_ip_address(self, mac, ip_conf):
+    def set_ip_address(self, mac, ip_conf, store_permanent=True):
         """
         Send a request to set or change the IP configuration of the device with the given mac address.
         :param mac: mac address of the target device (as ':' separated string)
         :type mac: string
         :param ip_conf: list containing the values to set for the ip address, subnet mask, and router in that order.
         :type ip_conf: List[string]
+        :param store_permanent: Optional, if set to False, the ip config will only be stored until the next power reset.
+        :type store_permanent: Bool
         :return: The response code to the request. Evaluates to false if the request failed. Use get_message() to get
         a human-readable response message.
         :rtype: ResponseCode
         """
         # To pack the ip addresses, convert them to bytes and concat them
         packed_ip_conf = b''.join([util.ip_address_to_bytes(ip_address) for ip_address in ip_conf])
-        value = bytes(BlockQualifier.STORE_PERMANENT) + packed_ip_conf
+
+        if store_permanent:
+            value = bytes(BlockQualifier.STORE_PERMANENT) + packed_ip_conf
+        else:
+            value = bytes(BlockQualifier.STORE_TEMPORARY) + packed_ip_conf
 
         option, suboption = Option.IP_ADDRESS
         self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
 
-        time.sleep(self.waiting_time)
         response = self.__read_response(set_request=True)
 
         if response is None:
@@ -168,13 +177,15 @@ class DCP:
 
         return response
 
-    def set_name_of_station(self, mac, name):
+    def set_name_of_station(self, mac, name, store_permanent=True):
         """
         Send a request to set or change the name of station of the device with the given mac address.
         :param mac: mac address of the target device (as ':' separated string)
         :type mac: string
         :param name: The new name to be set.
         :type name: string
+        :param store_permantent: Optional, if set to False, the name will only be stored until the next power reset.
+        :type store_permantent: Bool
         :return: The response code to the request. Evaluates to false if the request failed. Use get_message() to get
         a human-readable response message.
         :rtype: ResponseCode
@@ -183,12 +194,17 @@ class DCP:
         if not re.match(valid_pattern, name):
             raise ValueError('Name should correspond DNS standard. A string of invalid format provided.')
         name = name.lower()
-        value = bytes(BlockQualifier.STORE_PERMANENT) + bytes(name, encoding='ascii')
+
+        if store_permanent:
+            block_qualifiyer = BlockQualifier.STORE_PERMANENT
+        else:
+            block_qualifiyer = BlockQualifier.STORE_TEMPORARY
+
+        value = bytes(block_qualifiyer) + bytes(name, encoding='ascii')
 
         option, suboption = Option.NAME_OF_STATION
         self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
 
-        time.sleep(self.waiting_time)
         response = self.__read_response(set_request=True)
 
         if response is None:
@@ -258,18 +274,20 @@ class DCP:
 
         return response
 
-    def reset_to_factory(self, mac):
+    def reset_to_factory(self, mac, mode=ResetFactoryModes.RESET_COMMUNICATION):
         """
-        Send a request to reset the communication parameters of the device with the given mac address to its factory
-        settings.
+        Send a request to reset certain data or parameters of the device with the given mac address to its factory
+        settings. If no mode is given mode 2 (RESET_COMMUNICATION) is used.
         :param mac: mac address of the target device (as ':' separated string)
         :type mac: string
+        :param mode: reset mode
+        :type mode: ResetFactoryModes
         :return: The response code to the request. Evaluates to false if the request failed. Use get_message() to get
         a human-readable response message.
         :rtype: ResponseCode
         """
         option, suboption = Option.RESET_TO_FACTORY
-        value = bytes(BlockQualifier.RESET_COMMUNICATION)
+        value = bytes(mode)
         self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
 
         response = self.__read_response(set_request=True)
@@ -282,7 +300,30 @@ class DCP:
 
         return response
 
-    def __send_request(self, dst_mac, frame_id, service, option, suboption, value=None, response_delay=0):
+    def factory_reset(self, mac):
+        """
+        Send a request to reset the device with the given mac address to its factory settings.
+        :param mac: mac address of the target device (as ':' separated string)
+        :type mac: string
+        :return: The response code to the request. Evaluates to false if the request failed. Use get_message() to get
+        a human-readable response message.
+        :rtype: ResponseCode
+        """
+        option, suboption = Option.RESET_FACTORY
+        value = bytes(BlockQualifier.RESERVED)
+        self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
+
+        response = self.__read_response(set_request=True)
+
+        if response is None:
+            logger.debug(f"Timeout: no answer from device with MAC {mac} to reset request.")
+            raise DcpTimeoutError
+        elif not response:
+            logger.debug(f"Reset unsuccessful: {response.get_message()}")
+
+        return response
+
+    def __send_request(self, dst_mac, frame_id, service: ServiceID, option, suboption, value=None, response_delay=0):
         """
         Send a DCP request with the given option and sub-option and an optional payload (the given value)
         :param dst_mac: The mac address to send the to (as ':' separated string).
@@ -290,7 +331,7 @@ class DCP:
         :param frame_id: The DCP frame ID.
         :type frame_id: int
         :param service: The DCP service ID.
-        :type service: int
+        :type service: ServiceID
         :param option: The option of the DCP data block, see DCP specification for more infos.
         :type option: int
         :param suboption: The sub-option of the DCP data block, see DCP specification for more infos.
@@ -303,8 +344,11 @@ class DCP:
         self.__xid += 1  # increment the XID wih each request (used to identify a transaction)
 
         # Construct the DCPBlockRequest
-        block_content = bytes() if value is None else value
-        block = DCPBlockRequest(option, suboption, payload=block_content)
+        if service == ServiceID.GET:
+            block = DCPBlockRequestGet(option, suboption)
+        else:
+            block_content = bytes() if value is None else value
+            block = DCPBlockRequest(option, suboption, payload=block_content)
 
         # Create DCP frame
         service_type = ServiceType.REQUEST

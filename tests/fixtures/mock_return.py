@@ -13,6 +13,9 @@ snicaddr = namedtuple("snicaddr", ["family", "address", "netmask", "broadcast", 
 
 
 class MockDevice:
+    """
+    A class to store and acces information about a mocked device. 
+    """
     def __init__(self, name, mac, ip_conf, err_code, family):
         self.NameOfStation = name
         self.MAC = mac
@@ -26,6 +29,10 @@ class MockDevice:
 
 
 class MockReturn:
+    """
+    This class provides some sample mocked devices for testing and functions to mock
+    DCP packets.
+    """
     testnetz = {'Testnetz': [snicaddr(psutil.AF_LINK, '00-50-56-AC-DD-2E', None, None, None),
                              snicaddr(socket.AF_INET, '10.0.2.124', '255.255.240.0', None, None)]}
     src = '00:50:56:ac:dd:2e'
@@ -45,7 +52,26 @@ class MockReturn:
     block = None
     xid = 0x7010052
 
+    def mac_address_to_bytes(self, mac_address):
+        """
+        Converts the mac address from ':'-separated strings to bytes by encoding each part as binary and concatenating them.
+        :param mac_address: The mac address given as ':'-separated strings.
+        :type mac_address: string
+        :return: The mac address encoded as bytes.
+        :rtype: bytes
+        """
+        return b''.join(binascii.unhexlify(num) for num in mac_address.split(':'))
+
+
     def ip_to_hex(self, ip_conf):
+        """
+        Converts an ip suit (list of strings, eg. ['10.0.0.251', '255.255.240.0', '10.0.0.1'])
+        to bytes.
+        :param ip_conf: List or Tupel of strings in the order ip address, subnet mask, gateway
+        :type ip: Tuple[string, string, string]
+        :return: ip suit represented as bytes
+        :rtype: bytes
+        """
         str_hex = ''
         for param in ip_conf:
             nums = list(param.split('.'))
@@ -54,6 +80,16 @@ class MockReturn:
         return bytes.fromhex(str_hex)
 
     def identify_response(self, resp_type, xid=0x7010052):
+        """
+        Creates a devies's DCP-response. Note: The mocked device must be set previously via
+        self.dst_custom if the resp_type is not 'IDENTIFY_ALL'.
+        :param resp_type: To whih request to respond
+        :type resp_type: string
+        :param xid: xid to be used in the response
+        :type xid: int
+        :return: dcp response package as bytes
+        :rtype: List[bytes]
+        """
         self.xid = xid
 
         if resp_type == 'IDENTIFY_ALL':
@@ -75,6 +111,12 @@ class MockReturn:
             return self.generate_reset()
 
     def generate_identify(self):
+        """
+        Generate the devices's response to a dcp-identify request.
+        Note: The mocked device must be set previously via self.dst_custom!
+        :return: dcp response package as bytes
+        :rtype: List[bytes]
+        """
         self.frame_id = 0xfeff
         self.service_id = pnio_dcp.dcp_constants.ServiceID.IDENTIFY
         if len(self.devices[self.dst_custom].NameOfStation) % 2 == 1:
@@ -102,6 +144,14 @@ class MockReturn:
         return self.compose_response()
 
     def generate_get(self, param):
+        """
+        Generate the devices's response to a dcp-get request.
+        Note: The mocked device must be set previously via self.dst_custom!
+        :param param: which value to get 'IP' or 'NAME'
+        :type param: string
+        :return: dcp response package as bytes
+        :rtype: List[bytes]
+        """
         self.frame_id = 0xfefd
         self.service_id = pnio_dcp.dcp_constants.ServiceID.GET
         content_tail = bytes([0x05, 0x04, 0x0003, 0x000001])
@@ -121,6 +171,12 @@ class MockReturn:
         return self.compose_response()
 
     def generate_set(self):
+        """
+        Generate the devices's response to a dcp-set request.
+        Note: The mocked device must be set previously via self.dst_custom!
+        :return: dcp response package as bytes
+        :rtype: List[bytes]
+        """
         self.frame_id = 0xfefd
         self.service_id = pnio_dcp.dcp_constants.ServiceID.SET
         block_content = bytes([0x02, 0x02]) + binascii.unhexlify(self.devices[self.dst_custom].err_code)
@@ -128,6 +184,12 @@ class MockReturn:
         return self.compose_response()
 
     def generate_reset(self):
+        """
+        Generate the devices's response to a dcp-factory-reset request.
+        Note: The mocked device must be set previously via self.dst_custom!
+        :return: dcp response package as bytes
+        :rtype: List[bytes]
+        """
         self.frame_id = 0xfefd
         self.service_id = pnio_dcp.dcp_constants.ServiceID.SET
         opt, subopt = 0x05, 0x04
@@ -137,10 +199,18 @@ class MockReturn:
         return self.compose_response()
 
     def compose_response(self):
+        """
+        Generate the devices's response to a request based on the dcp block payload stored in self.block.
+        :return: dcp response package as bytes
+        :rtype: List[bytes]
+        """
         dcp = pnio_dcp.protocol.DCPPacket(self.frame_id, self.service_id, self.service_type, self.xid, 0x0000, len(self.block), payload=self.block)
         eth = pnio_dcp.protocol.EthernetPacket(self.src, self.dst_custom, self.eth_type, payload=dcp)
         return [bytes(eth)]
 
 @pytest.fixture(scope='function')
 def mock_return():
+    """
+    Provides the mockreturn fixture.
+    """
     return MockReturn()

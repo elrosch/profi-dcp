@@ -119,8 +119,8 @@ class PcapDevice:
         """
         pcap_device = pcap_if_p.contents
 
-        self.name = pcap_device.name.decode()
-        self.description = pcap_device.description.decode() if pcap_device.description else ""
+        self.name = pcap_device.name.decode('iso-8859-1', errors='replace')
+        self.description = pcap_device.description.decode('iso-8859-1', errors='replace') if pcap_device.description else ""
 
         self.addresses = []
         next_address = pcap_device.addresses
@@ -262,7 +262,7 @@ class PcapWrapper:
         answer packet from being dropped due to the full buffer.
         :param timeout: Time, after which the function returns, even if the buffer is not completely empty
         :type timeout: integer
-        """ 
+        """
         timed_out = time.time() + timeout
         while time.time() < timed_out:
             received_packet = self.get_next_packet()
