@@ -1,6 +1,6 @@
 """CLI Tool to set IP address."""
-from profinet_dcp.profinet_dcp import DCP
-from profinet_dcp.utils.logging import Logging
+from pnet_dcp.pnet_dcp import DCP
+from pnet_dcp.utils.logging import Logging
 
 
 def add_set_ip_parser(subparsers):

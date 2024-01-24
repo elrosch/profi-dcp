@@ -4,8 +4,8 @@ import pytest
 import logging
 import socket
 
-from profinet_dcp.l2socket.l2socket import L2PcapSocket
-from profinet_dcp.l2socket.pcap_wrapper import WinPcap
+from pnet_dcp.l2socket.l2socket import L2PcapSocket
+from pnet_dcp.l2socket.pcap_wrapper import WinPcap
 from util import pcap_available, get_ip
 
 

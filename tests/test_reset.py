@@ -1,6 +1,6 @@
 import pytest
-from profinet_dcp.error import DcpTimeoutError
-from profinet_dcp.dcp_constants import ResetFactoryModes
+from pnet_dcp.error import DcpTimeoutError
+from pnet_dcp.dcp_constants import ResetFactoryModes
 
 
 class TestDCPReset:

@@ -1,12 +1,12 @@
 import pytest
-from profinet_dcp.profinet_dcp import DCP
+from pnet_dcp.pnet_dcp import DCP
 import configparser
 from unittest.mock import patch, MagicMock
 
 
 @pytest.fixture(scope='function')
-@patch('profinet_dcp.profinet_dcp.L2Socket')
-@patch('profinet_dcp.profinet_dcp.psutil.net_if_addrs')
+@patch('pnet_dcp.pnet_dcp.L2Socket')
+@patch('pnet_dcp.pnet_dcp.psutil.net_if_addrs')
 def instance_dcp(psutil_net_if_addrs, socket, mock_return):
     """
     Provides a dcp instance with a mocked socket and the mocked socket.

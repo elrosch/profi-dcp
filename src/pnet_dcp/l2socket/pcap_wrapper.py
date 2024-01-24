@@ -5,8 +5,8 @@ All Rights Reserved.
 """
 from collections import namedtuple
 
-from profinet_dcp.l2socket.winpcap import WinPcap, bpf_program, pcap_pkthdr, pcap_if, sockaddr_in, sockaddr_in6
-from profinet_dcp.utils.logging import Logging
+from pnet_dcp.l2socket.winpcap import WinPcap, bpf_program, pcap_pkthdr, pcap_if, sockaddr_in, sockaddr_in6
+from pnet_dcp.utils.logging import Logging
 import ctypes
 import socket
 import ipaddress

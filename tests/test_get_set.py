@@ -1,5 +1,5 @@
 import pytest
-from profinet_dcp.error import DcpTimeoutError
+from pnet_dcp.error import DcpTimeoutError
 
 
 class TestDCPGetSet:

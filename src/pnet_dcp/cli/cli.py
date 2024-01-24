@@ -1,8 +1,8 @@
 """CLI Tool that distributes subcommands"""
 import argparse
 import logging
-from profinet_dcp.cli.set_ip import add_set_ip_parser
-from profinet_dcp.utils.logging import Logging
+from pnet_dcp.cli.set_ip import add_set_ip_parser
+from pnet_dcp.utils.logging import Logging
 
 
 def main():

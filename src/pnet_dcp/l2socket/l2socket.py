@@ -3,7 +3,7 @@ Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2021 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
 """
-from profinet_dcp.l2socket.pcap_wrapper import PcapWrapper
+from pnet_dcp.l2socket.pcap_wrapper import PcapWrapper
 import socket
 
 

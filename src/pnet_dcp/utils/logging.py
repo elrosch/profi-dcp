@@ -6,7 +6,7 @@ from rich.logging import RichHandler
 class Logging:
     """Class that contains common functions for logging."""
 
-    logger = logging.getLogger('profinet-dcp')
+    logger = logging.getLogger('pnet-dcp')
 
     def __init__(self, logging_level=logging.INFO, filename=None):
         logging.basicConfig(format='%(message)s',

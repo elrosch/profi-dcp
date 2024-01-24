@@ -2,7 +2,7 @@ import pytest
 import time
 
 from util import pcap_available, get_ip
-from profinet_dcp.profinet_dcp import DCP
+from pnet_dcp.pnet_dcp import DCP
 
 
 @pytest.mark.skip

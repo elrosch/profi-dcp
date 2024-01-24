@@ -4,7 +4,7 @@ Copyright (c) 2020 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
 """
 import struct
-from profinet_dcp import util, dcp_constants
+from pnet_dcp import util, dcp_constants
 import logging
 
 logger = logging.getLogger(__name__)

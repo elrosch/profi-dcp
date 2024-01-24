@@ -10,13 +10,13 @@ import time
 
 import psutil
 
-import profinet_dcp.dcp_constants as dcp_constants
-import profinet_dcp.util as util
-from profinet_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier, ResetFactoryModes
-from profinet_dcp.error import DcpTimeoutError
-from profinet_dcp.l2socket import L2Socket
-from profinet_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest, DCPBlockRequestGet
-from profinet_dcp.utils.logging import Logging
+import pnet_dcp.dcp_constants as dcp_constants
+import pnet_dcp.util as util
+from pnet_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier, ResetFactoryModes
+from pnet_dcp.error import DcpTimeoutError
+from pnet_dcp.l2socket import L2Socket
+from pnet_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest, DCPBlockRequestGet
+from pnet_dcp.utils.logging import Logging
 
 
 class Device:

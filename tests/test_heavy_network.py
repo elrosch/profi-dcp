@@ -3,9 +3,9 @@ import pytest
 import threading
 import time
 import socket as sock
-from profinet_dcp.profinet_dcp import DCP
-from profinet_dcp.dcp_constants import ETHER_TYPE, FrameID, Option, ServiceID, ServiceType
-from profinet_dcp.protocol import DCPBlockRequest, DCPPacket, EthernetPacket
+from pnet_dcp.pnet_dcp import DCP
+from pnet_dcp.dcp_constants import ETHER_TYPE, FrameID, Option, ServiceID, ServiceType
+from pnet_dcp.protocol import DCPBlockRequest, DCPPacket, EthernetPacket
 from util import get_ip, pcap_available
 
 

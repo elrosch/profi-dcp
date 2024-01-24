@@ -21,7 +21,7 @@ class ServiceType:
 
 class ResponseDelay:
     GET_SET = b'\x00\x00'
-    IDENTIFY = b'\x00\x80'  # Note this is custom defined in profinet_dcp/dcp_constants.py
+    IDENTIFY = b'\x00\x80'  # Note this is custom defined in pnet_dcp/dcp_constants.py
 
 
 class Option:
