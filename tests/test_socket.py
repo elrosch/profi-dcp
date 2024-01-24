@@ -4,8 +4,8 @@ import pytest
 import logging
 import socket
 
-from pnio_dcp.l2socket.l2socket import L2PcapSocket
-from pnio_dcp.l2socket.pcap_wrapper import WinPcap
+from profinet_dcp.l2socket.l2socket import L2PcapSocket
+from profinet_dcp.l2socket.pcap_wrapper import WinPcap
 from util import pcap_available, get_ip
 
 
@@ -85,6 +85,7 @@ class TestPcapSocket:
 
         l2_socket.close()
 
+
 class TestL2Socket:
     """Test L2-Socket functions on Windows and Linux."""
 
@@ -114,7 +115,7 @@ class TestL2Socket:
         """
         # Get 2 sockets on the loopback adapter
         l2_socket_1, l2_socket_2 = l2_sockets(2)
-        
+
         data = bytes([0] * 64)
 
         def send_data():
@@ -142,4 +143,3 @@ class TestL2Socket:
         logging.info(f"Sent data {'received' if received_sent_data else 'not received'} after {packet_count} packets "
                      f"and {end - start}s")
         assert received_sent_data
-

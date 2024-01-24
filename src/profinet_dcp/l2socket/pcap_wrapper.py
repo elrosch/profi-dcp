@@ -1,19 +1,20 @@
 """
+Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2021 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
-License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
 from collections import namedtuple
 
-from pnio_dcp.l2socket.winpcap import WinPcap, bpf_program, pcap_pkthdr, pcap_if, sockaddr_in, sockaddr_in6
-from pnio_dcp.util import logger
+from profinet_dcp.l2socket.winpcap import WinPcap, bpf_program, pcap_pkthdr, pcap_if, sockaddr_in, sockaddr_in6
+from profinet_dcp.utils.logging import Logging
 import ctypes
 import socket
 import ipaddress
 import time
 
 IPv4Address = namedtuple("IPv4Address", ["port", "ip_address"])
-IPv6Address = namedtuple("IPv6Address", ["port", "flow_info", "ip_address", "scope_id"])
+IPv6Address = namedtuple(
+    "IPv6Address", ["port", "flow_info", "ip_address", "scope_id"])
 
 
 class SocketAddress:
@@ -22,6 +23,7 @@ class SocketAddress:
     Describes the address of a socket, which consists of an address family (AF_INET for IPv4 or AF_INET6 für IPv6) and
     an address (either IPv4Address or IPv6Address depending on the family).
     """
+
     def __init__(self, socket_address_p):
         """
         Create new SocketAddress by parsing a given sockaddr object.
@@ -34,12 +36,14 @@ class SocketAddress:
         # cast the sockaddr to the corresponding specialized sockaddr type and extract the address information
         self.address = None
         if self.address_family == socket.AF_INET:
-            socket_address = ctypes.cast(socket_address_p, ctypes.POINTER(sockaddr_in)).contents
+            socket_address = ctypes.cast(
+                socket_address_p, ctypes.POINTER(sockaddr_in)).contents
             port = socket_address.sin_port
             ip_address = self.__parse_ip_address(socket_address.sin_addr)
             self.address = IPv4Address(port, ip_address)
         elif self.address_family == socket.AF_INET6:
-            socket_address = ctypes.cast(socket_address_p, ctypes.POINTER(sockaddr_in6)).contents
+            socket_address = ctypes.cast(
+                socket_address_p, ctypes.POINTER(sockaddr_in6)).contents
             port = socket_address.sin6_port
             flow_info = socket_address.sin6_flowinfo
             scope_id = socket_address.sin6_scope_id
@@ -74,6 +78,7 @@ class PcapAddress:
     Consists of a (mandatory) address and optionally, a netmask, broadcast address and destination address.
     All addresses are represented as SocketAddress.
     """
+
     def __init__(self, pcap_addr):
         """
         Create new PcapAddress by parsing a given pcap_addr object.
@@ -82,8 +87,10 @@ class PcapAddress:
         """
         self.address = self.__parse_address(pcap_addr.contents.addr)
         self.netmask = self.__parse_address(pcap_addr.contents.netmask)
-        self.broadcast_address = self.__parse_address(pcap_addr.contents.broadaddr)
-        self.destination_address = self.__parse_address(pcap_addr.contents.dstaddr)
+        self.broadcast_address = self.__parse_address(
+            pcap_addr.contents.broadaddr)
+        self.destination_address = self.__parse_address(
+            pcap_addr.contents.dstaddr)
 
     @staticmethod
     def __parse_address(address_pointer):
@@ -111,6 +118,7 @@ class PcapDevice:
     A python class corresponding to the pcap_if objects used by pcap to describe network devices.
     A device consists of a name, an optional description, a list of addresses (of type PcapAddress), and some flags.
     """
+
     def __init__(self, pcap_if_p):
         """
         Create new PcapDevice by parsing a given pcap_if object.
@@ -120,7 +128,8 @@ class PcapDevice:
         pcap_device = pcap_if_p.contents
 
         self.name = pcap_device.name.decode('iso-8859-1', errors='replace')
-        self.description = pcap_device.description.decode('iso-8859-1', errors='replace') if pcap_device.description else ""
+        self.description = pcap_device.description.decode(
+            'iso-8859-1', errors='replace') if pcap_device.description else ""
 
         self.addresses = []
         next_address = pcap_device.addresses
@@ -129,7 +138,8 @@ class PcapDevice:
             self.addresses.append(address)
             next_address = next_address.contents.next
 
-        self.flags = pcap_device.flags  # as of now, the flags are not parsed as this is not necessary for the dcp lib
+        # as of now, the flags are not parsed as this is not necessary for the dcp lib
+        self.flags = pcap_device.flags
 
     def __str__(self):
         """
@@ -178,10 +188,12 @@ class PcapWrapper:
             return False
 
         all_devices = self.get_all_devices()
-        filtered_devices = [device for device in all_devices if filter_by_ip(device)]
+        filtered_devices = [
+            device for device in all_devices if filter_by_ip(device)]
 
         if not filtered_devices:
-            logger.debug(f"No pcap device with ip {ip} found in {[str(device) for device in all_devices]}")
+            Logging.logger.debug(
+                f"No pcap device with ip {ip} found in {[str(device) for device in all_devices]}")
             return None
         else:
             return filtered_devices[0].name

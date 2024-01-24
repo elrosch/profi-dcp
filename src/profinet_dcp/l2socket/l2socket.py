@@ -1,9 +1,9 @@
 """
+Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2021 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
-License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
-from pnio_dcp.l2socket.pcap_wrapper import PcapWrapper
+from profinet_dcp.l2socket.pcap_wrapper import PcapWrapper
 import socket
 
 
@@ -66,7 +66,8 @@ class L2LinuxSocket:
         :type protocol: int
         """
         protocol = protocol or self.ETH_P_ALL
-        self.socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(protocol))
+        self.socket = socket.socket(
+            socket.AF_PACKET, socket.SOCK_RAW, socket.htons(protocol))
         self.socket.settimeout(recv_timeout)
         self.socket.bind((interface, 0))
 

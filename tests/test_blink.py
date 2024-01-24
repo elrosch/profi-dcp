@@ -1,5 +1,6 @@
 import pytest
-from pnio_dcp import DcpTimeoutError
+from profinet_dcp.error import DcpTimeoutError
+
 
 class TestLEDBlink:
     """
@@ -14,12 +15,14 @@ class TestLEDBlink:
 
         for device_mac in mock_return.dst:
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('SET', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'SET', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
             ret_msg = instance_dcp.blink(device_mac)
-            assert ret_msg.code == int(mock_return.devices[device_mac].err_code)
+            assert ret_msg.code == int(
+                mock_return.devices[device_mac].err_code)
 
     def test_blink_no_response_raises_timeout(self, mock_return, instance_dcp):
         """

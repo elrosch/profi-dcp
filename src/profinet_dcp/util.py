@@ -1,14 +1,10 @@
 """
+Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2020 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
-License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
 import binascii
-import logging
 import socket
-
-
-logger = logging.getLogger("pnio_dcp")
 
 
 def mac_address_to_bytes(mac_address):
@@ -60,6 +56,7 @@ def ip_address_to_bytes(ip_address):
     if not all(octet.isdigit() for octet in octets):
         raise TypeError('Provided invalid IP-octet (non-integer)')
     if not all(0 <= int(octet) <= 255 for octet in octets):
-        raise ValueError('Provided value exceeds the allowed range of IP octets (0-255)')
+        raise ValueError(
+            'Provided value exceeds the allowed range of IP octets (0-255)')
 
     return socket.inet_aton(ip_address)

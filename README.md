@@ -1,9 +1,11 @@
-# PNIO-DCP
+# PROFINET-DCP
+
+This is a fork from [profinet_dcp](https://gitlab.com/pyshacks/profinet_dcp).
 
 A simple Python library to send and receive messages with the Profinet Discovery and basic Configuration Protocol (DCP) protocol.
 It can send requests and parse the corresponding responses to identify devices over the network, get and set their parameters or reset them to factory settings.
 
-Source code: [https://gitlab.com/pyshacks/pnio_dcp](https://gitlab.com/pyshacks/pnio_dcp)
+Source code: [https://gitlab.com/pyshacks/profinet_dcp](https://gitlab.com/pyshacks/profinet_dcp)
 
 ## Installation
 
@@ -13,7 +15,7 @@ pip install <path to project root>
 ```
 or from pypi with
 ```sh
-pip install pnio_dcp
+pip install profinet_dcp
 ```
 It was tested with Python 3.6, other Python versions might work as well.
 
@@ -32,18 +34,18 @@ This section gives a short overview of the available features and how to use the
 
 Create a new DCP instance with
 ```python
-from pnio_dcp import DCP
+from profinet_dcp import DCP
 ip = "10.0.0.76"
-dcp = pnio_dcp.DCP(ip)
+dcp = profinet_dcp.DCP(ip)
 ```
 where the given IP address is the IP of the host machine in the network to use for DCP communication.
 
 All currently available requests are described in the following.  
-All requests except `identify_all` will raise a `pnio_dcp.DcpTimeoutError` if the requested device does not answer within the allowed time frame (currently 7s).
+All requests except `identify_all` will raise a `profinet_dcp.DcpTimeoutError` if the requested device does not answer within the allowed time frame (currently 7s).
 
 ### Identify Request
 Identify requests can be used to identify DCP devices in the network. 
-The identified devices are always returned as pnio_dcp.Device objects.
+The identified devices are always returned as profinet_dcp.Device objects.
 
 To identify all devices in the network, use
 ```python

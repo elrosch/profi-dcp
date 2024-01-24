@@ -1,7 +1,7 @@
 """
+Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2021 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
-License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
 import ctypes
 import os
@@ -104,7 +104,8 @@ class WinPcap:
         Will raise an OSError if neither WinPcap nor Npcap can be found.
         """
         if self.__pcap_dll is None:
-            npcap_path = pathlib.Path(os.environ["WINDIR"], "System32", "Npcap")
+            npcap_path = pathlib.Path(
+                os.environ["WINDIR"], "System32", "Npcap")
             if npcap_path.exists():
                 os.environ['PATH'] = f"{npcap_path};{os.environ['PATH']}"
                 load_dll("Packet")
@@ -124,11 +125,13 @@ class WinPcap:
           - pcap_findalldevs
         """
         self._pcap_open_live = self.__pcap_dll.pcap_open_live
-        self._pcap_open_live.argtypes = [c_string, ctypes.c_int, ctypes.c_int, ctypes.c_int, c_string]
+        self._pcap_open_live.argtypes = [
+            c_string, ctypes.c_int, ctypes.c_int, ctypes.c_int, c_string]
         self._pcap_open_live.restype = ctypes.POINTER(pcap_t)
 
         self._pcap_setmintocopy = self.__pcap_dll.pcap_setmintocopy
-        self._pcap_setmintocopy.argtype = [ctypes.POINTER(pcap_t), ctypes.c_int]
+        self._pcap_setmintocopy.argtype = [
+            ctypes.POINTER(pcap_t), ctypes.c_int]
         self._pcap_setmintocopy.restype = ctypes.c_int
 
         self._pcap_close = self.__pcap_dll.pcap_close
@@ -141,7 +144,8 @@ class WinPcap:
         self._pcap_next_ex.restype = ctypes.c_int
 
         self._pcap_sendpacket = self.__pcap_dll.pcap_sendpacket
-        self._pcap_sendpacket.argtypes = [ctypes.POINTER(pcap_t), ctypes.c_void_p, ctypes.c_int]
+        self._pcap_sendpacket.argtypes = [
+            ctypes.POINTER(pcap_t), ctypes.c_void_p, ctypes.c_int]
         self._pcap_sendpacket.restype = ctypes.c_int
 
         self._pcap_compile = self.__pcap_dll.pcap_compile
@@ -150,11 +154,13 @@ class WinPcap:
         self._pcap_compile.restype = ctypes.c_int
 
         self._pcap_setfilter = self.__pcap_dll.pcap_setfilter
-        self._pcap_setfilter.argtypes = [ctypes.POINTER(pcap_t), ctypes.POINTER(bpf_program)]
+        self._pcap_setfilter.argtypes = [
+            ctypes.POINTER(pcap_t), ctypes.POINTER(bpf_program)]
         self._pcap_setfilter.restype = ctypes.c_int
 
         self._pcap_findalldevs = self.__pcap_dll.pcap_findalldevs
-        self._pcap_findalldevs.argtypes = [ctypes.POINTER(ctypes.POINTER(pcap_if)), c_string]
+        self._pcap_findalldevs.argtypes = [
+            ctypes.POINTER(ctypes.POINTER(pcap_if)), c_string]
         self._pcap_findalldevs.restype = ctypes.c_int
 
     def pcap_open_live(self, device, to_ms, snaplen=0xffff, promisc=0):
@@ -176,7 +182,8 @@ class WinPcap:
         """
         device_buffer = ctypes.create_string_buffer(device.encode("utf8"))
         error_buffer = ctypes.create_string_buffer(256)
-        p = self._pcap_open_live(device_buffer, snaplen, promisc, to_ms, error_buffer)
+        p = self._pcap_open_live(
+            device_buffer, snaplen, promisc, to_ms, error_buffer)
 
         # Check for potential errors
         error = bytes(bytearray(error_buffer)).strip(b"\x00")
@@ -250,7 +257,8 @@ class WinPcap:
         :return: -1 on error (0 on success?)
         :rtype: int
         """
-        filter_buffer = ctypes.create_string_buffer(filter_string.encode("utf8"))
+        filter_buffer = ctypes.create_string_buffer(
+            filter_string.encode("utf8"))
         return self._pcap_compile(p, fp, filter_buffer, optimize, netmask)
 
     def pcap_setfilter(self, p, fp):

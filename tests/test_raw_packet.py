@@ -1,6 +1,6 @@
 import itertools
 import pytest
-from pnio_dcp import ResetFactoryModes
+from profinet_dcp.dcp_constants import ResetFactoryModes
 from protocol_constants import MULTICAST_PN_ADDRESS, DCPHeader, ServiceId, ServiceType, ResponseDelay, Option, SubOption, BlockQualifier, SignalValue
 
 
@@ -15,8 +15,10 @@ class TestRawPacket:
         """
         instance_dcp, socket = instance_dcp
         # Setup mock for call to identify all
-        valid_responses = mock_return.identify_response('IDENTIFY_ALL', xid=instance_dcp._DCP__xid + 1)
-        recv_return_value = itertools.chain(valid_responses, itertools.cycle([None]))
+        valid_responses = mock_return.identify_response(
+            'IDENTIFY_ALL', xid=instance_dcp._DCP__xid + 1)
+        recv_return_value = itertools.chain(
+            valid_responses, itertools.cycle([None]))
         socket().recv.return_value = recv_return_value
         socket().recv.side_effect = socket().recv.return_value
 
@@ -26,12 +28,14 @@ class TestRawPacket:
         # Check the packet was built correctly
         raw_packet = socket().send.call_args.args[0]
         assert raw_packet[0:6] == MULTICAST_PN_ADDRESS, "Destination MAC wrong"
-        assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+        assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+            mock_return.src), "Source MAC wrong"
         assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
         assert raw_packet[14:16] == DCPHeader.FRAME_ID_IDENTIFY, "FrameID wrong"
         assert raw_packet[16:17] == ServiceId.IDENTIFY, "ServiceID wrong"
         assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-        assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+        assert int.from_bytes(
+            raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
         assert raw_packet[22:24] == ResponseDelay.IDENTIFY, "Response delay wrong"
         assert raw_packet[24:26] == b'\x00\x04', "Length wrong"
         assert raw_packet[26:27] == Option.ALL_SELECTOR_OPTION, "Option wrong"
@@ -48,7 +52,8 @@ class TestRawPacket:
         for device_mac in mock_return.dst:
             # Setup mock for call to identify
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('IDENTIFY', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'IDENTIFY', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -57,13 +62,16 @@ class TestRawPacket:
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(device_mac), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                device_mac), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_IDENTIFY, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.IDENTIFY, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.IDENTIFY, "Response delay wrong"
             assert raw_packet[24:26] == b'\x00\x04', "Length wrong"
             assert raw_packet[26:27] == Option.ALL_SELECTOR_OPTION, "Option wrong"
@@ -83,7 +91,8 @@ class TestRawPacket:
         for device_mac in mock_return.dst:
             # Setup mock for call to set ip address
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('SET', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'SET', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -91,43 +100,52 @@ class TestRawPacket:
             if store_permanent == None:
                 instance_dcp.set_ip_address(device_mac, new_ip)
             else:
-                instance_dcp.set_ip_address(device_mac, new_ip, store_permanent)                
+                instance_dcp.set_ip_address(
+                    device_mac, new_ip, store_permanent)
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(device_mac), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                device_mac), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_GET_SET, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.SET, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.GET_SET, "Padding wrong"
             assert raw_packet[24:26] == b'\x00\x12', "Length wrong"
             assert raw_packet[26:27] == Option.IP_OPTION, "Option wrong"
             assert raw_packet[27:28] == SubOption.IP_PARAMETER, "Suboption wrong"
             assert raw_packet[28:30] == b'\x00\x0e', "DCPBlockLength wrong"
             if store_permanent == None:
-                assert raw_packet[30:32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
+                assert raw_packet[30:
+                                  32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
             elif store_permanent:
-                assert raw_packet[30:32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
+                assert raw_packet[30:
+                                  32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
             else:
-                assert raw_packet[30:32] == BlockQualifier.TEMPORARY, "Block Qualifyer wrong (Must be store temporary)"
+                assert raw_packet[30:
+                                  32] == BlockQualifier.TEMPORARY, "Block Qualifyer wrong (Must be store temporary)"
 
-            assert raw_packet[32:44] == mock_return.ip_to_hex(new_ip), "IPSuite value wrong"
+            assert raw_packet[32:44] == mock_return.ip_to_hex(
+                new_ip), "IPSuite value wrong"
 
             assert len(raw_packet) == 44, "Length wrong"
-    
-    @pytest.mark.parametrize("store_permanent", [None, True, False])        
+
+    @pytest.mark.parametrize("store_permanent", [None, True, False])
     def test_raw_packet_set_name(self, mock_return, instance_dcp, store_permanent):
         """
         Check packet for set name of station is build correctly.
         """
         instance_dcp, socket = instance_dcp
         for idx in range(len(mock_return.dst)):
-            # Setup mock for call to set name of station 
+            # Setup mock for call to set name of station
             mock_return.dst_custom = mock_return.dst[idx]
-            socket().recv.return_value = mock_return.identify_response('SET', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'SET', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -139,30 +157,40 @@ class TestRawPacket:
 
             # Invoke set name of station
             if store_permanent == None:
-                instance_dcp.set_name_of_station(mock_return.dst[idx], new_name)
+                instance_dcp.set_name_of_station(
+                    mock_return.dst[idx], new_name)
             else:
-                instance_dcp.set_name_of_station(mock_return.dst[idx], new_name, store_permanent)
+                instance_dcp.set_name_of_station(
+                    mock_return.dst[idx], new_name, store_permanent)
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(mock_return.dst[idx]), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                mock_return.dst[idx]), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_GET_SET, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.SET, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.GET_SET, "Padding wrong"
-            assert int.from_bytes(raw_packet[24:26], 'big') == len(new_name_bytes)+6, "Length wrong" #length with U16 alingment padding
+            assert int.from_bytes(raw_packet[24:26], 'big') == len(
+                new_name_bytes)+6, "Length wrong"  # length with U16 alingment padding
             assert raw_packet[26:27] == Option.DEVICE_PROPERTIES_OPTION, "Option wrong"
             assert raw_packet[27:28] == SubOption.NAME_OF_STATION, "Suboption wrong"
-            assert int.from_bytes(raw_packet[28:30], 'big') == len(new_name)+2, "DCPBlockLength wrong"  #length without U16 alingment padding
+            assert int.from_bytes(raw_packet[28:30], 'big') == len(
+                new_name)+2, "DCPBlockLength wrong"  # length without U16 alingment padding
             if store_permanent == None:
-                assert raw_packet[30:32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
+                assert raw_packet[30:
+                                  32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
             elif store_permanent:
-                assert raw_packet[30:32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
+                assert raw_packet[30:
+                                  32] == BlockQualifier.PERMANENT, "Block Qualifyer wrong (Must be store permanent)"
             else:
-                assert raw_packet[30:32] == BlockQualifier.TEMPORARY, "Block Qualifyer wrong (Must be store temporary)"
+                assert raw_packet[30:
+                                  32] == BlockQualifier.TEMPORARY, "Block Qualifyer wrong (Must be store temporary)"
             assert raw_packet[32:] == new_name_bytes, "Device name wrong"
 
             assert len(raw_packet) == 32+len(new_name_bytes), "Length wrong"
@@ -175,7 +203,8 @@ class TestRawPacket:
         for device_mac in mock_return.dst:
             # Setup mock for call to get ip address
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('GET_IP', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'GET_IP', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -184,13 +213,16 @@ class TestRawPacket:
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(device_mac), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                device_mac), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_GET_SET, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.GET, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.GET_SET, "Padding wrong"
             assert raw_packet[24:26] == b'\x00\x02', "Length wrong"
             assert raw_packet[26:27] == Option.IP_OPTION, "Option wrong"
@@ -206,7 +238,8 @@ class TestRawPacket:
         for device_mac in mock_return.dst:
             # Setup mock for call to get name of station
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('GET_NAME', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'GET_NAME', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -215,13 +248,16 @@ class TestRawPacket:
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(device_mac), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                device_mac), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_GET_SET, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.GET, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.GET_SET, "Padding wrong"
             assert raw_packet[24:26] == b'\x00\x02', "Length wrong"
             assert raw_packet[26:27] == Option.DEVICE_PROPERTIES_OPTION, "Option wrong"
@@ -238,7 +274,8 @@ class TestRawPacket:
         for device_mac in mock_return.dst:
             # Setup mock for call to blink
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('SET', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'SET', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -247,24 +284,28 @@ class TestRawPacket:
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(device_mac), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                device_mac), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_GET_SET, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.SET, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.GET_SET, "Padding wrong"
             assert raw_packet[24:26] == b'\x00\x08', "Length wrong"
             assert raw_packet[26:27] == Option.CONTROL_OPTION, "Option wrong"
             assert raw_packet[27:28] == SubOption.SIGNAL, "Suboption wrong"
             assert raw_packet[28:30] == b'\x00\x04', "DCPBlockLength wrong"
-            assert raw_packet[30:32] == BlockQualifier.NONE, "Block Qualifyer wrong (Must be set to all zeros)"
+            assert raw_packet[30:
+                              32] == BlockQualifier.NONE, "Block Qualifyer wrong (Must be set to all zeros)"
             assert raw_packet[32:34] == SignalValue.FLASH_ONCE, "Signal value wrong"
 
             assert len(raw_packet) == 34, "Length wrong"
 
-    @pytest.mark.parametrize("reset_mode", [None, ResetFactoryModes.RESET_COMMUNICATION, ResetFactoryModes.RESET_ENGENEERING, 
+    @pytest.mark.parametrize("reset_mode", [None, ResetFactoryModes.RESET_COMMUNICATION, ResetFactoryModes.RESET_ENGENEERING,
                                             ResetFactoryModes.RESET_ALL_DATA, ResetFactoryModes.RESET_DEVICE,
                                             ResetFactoryModes.RESET_AND_RESTORE])
     def test_raw_reset_to_factory(self, mock_return, instance_dcp, reset_mode):
@@ -275,7 +316,8 @@ class TestRawPacket:
         for device_mac in mock_return.dst:
             # Setup mock for call to reset to factory
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('RESET', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'RESET', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -287,13 +329,16 @@ class TestRawPacket:
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(device_mac), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                device_mac), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_GET_SET, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.SET, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.GET_SET, "Padding wrong"
             assert raw_packet[24:26] == b'\x00\x06', "Length wrong"
             assert raw_packet[26:27] == Option.CONTROL_OPTION, "Option wrong"
@@ -322,7 +367,8 @@ class TestRawPacket:
         for device_mac in mock_return.dst:
             # Setup mock for call to factory reset
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('RESET', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'RESET', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
@@ -331,13 +377,16 @@ class TestRawPacket:
 
             # Check the packet was built correctly
             raw_packet = socket().send.call_args.args[0]
-            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(device_mac), "Destination MAC wrong"
-            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(mock_return.src), "Source MAC wrong"
+            assert raw_packet[0:6] == mock_return.mac_address_to_bytes(
+                device_mac), "Destination MAC wrong"
+            assert raw_packet[6:12] == mock_return.mac_address_to_bytes(
+                mock_return.src), "Source MAC wrong"
             assert raw_packet[12:14] == DCPHeader.ETHERNET_TYPE, "Ethernet type wrong"
             assert raw_packet[14:16] == DCPHeader.FRAME_ID_GET_SET, "FrameID wrong"
             assert raw_packet[16:17] == ServiceId.SET, "ServiceID wrong"
             assert raw_packet[17:18] == ServiceType.REQUEST, "ServiceType wrong"
-            assert int.from_bytes(raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
+            assert int.from_bytes(
+                raw_packet[18:22], 'big') == instance_dcp._DCP__xid, "Xid wrong"
             assert raw_packet[22:24] == ResponseDelay.GET_SET, "Padding wrong"
             assert raw_packet[24:26] == b'\x00\x06', "Length wrong"
             assert raw_packet[26:27] == Option.CONTROL_OPTION, "Option wrong"

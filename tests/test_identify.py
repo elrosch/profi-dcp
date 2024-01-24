@@ -1,6 +1,6 @@
 import itertools
 import pytest
-import pnio_dcp
+from profinet_dcp.profinet_dcp import DcpTimeoutError, Device
 from socket import timeout
 
 
@@ -15,8 +15,10 @@ class TestDCPIdentify:
         """
         instance_dcp, socket = instance_dcp
 
-        valid_responses = mock_return.identify_response('IDENTIFY_ALL', xid=instance_dcp._DCP__xid + 1)
-        recv_return_value = itertools.chain(valid_responses, itertools.cycle([None]))
+        valid_responses = mock_return.identify_response(
+            'IDENTIFY_ALL', xid=instance_dcp._DCP__xid + 1)
+        recv_return_value = itertools.chain(
+            valid_responses, itertools.cycle([None]))
         socket().recv.return_value = recv_return_value
         socket().recv.side_effect = socket().recv.return_value
 
@@ -53,12 +55,13 @@ class TestDCPIdentify:
         instance_dcp, socket = instance_dcp
         for device_mac in mock_return.dst:
             mock_return.dst_custom = device_mac
-            socket().recv.return_value = mock_return.identify_response('IDENTIFY', xid=instance_dcp._DCP__xid + 1)
+            socket().recv.return_value = mock_return.identify_response(
+                'IDENTIFY', xid=instance_dcp._DCP__xid + 1)
             socket().recv.return_value.append(TimeoutError)
             socket().recv.side_effect = socket().recv.return_value
 
             identified = instance_dcp.identify(device_mac)
-            assert isinstance(identified, pnio_dcp.Device)
+            assert isinstance(identified, Device)
             assert identified.name_of_station == mock_return.devices[device_mac].NameOfStation
             assert identified.MAC == mock_return.devices[device_mac].MAC
             assert identified.IP == mock_return.devices[device_mac].IP
@@ -74,5 +77,5 @@ class TestDCPIdentify:
         socket().recv.return_value = None
         device_mac = mock_return.dst[0]
 
-        with pytest.raises(pnio_dcp.DcpTimeoutError):
+        with pytest.raises(DcpTimeoutError):
             instance_dcp.identify(device_mac)

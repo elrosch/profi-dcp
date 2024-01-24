@@ -1,12 +1,12 @@
 import pytest
-import pnio_dcp
+from profinet_dcp.profinet_dcp import DCP
 import configparser
 from unittest.mock import patch, MagicMock
 
 
 @pytest.fixture(scope='function')
-@patch('pnio_dcp.pnio_dcp.L2Socket')
-@patch('pnio_dcp.pnio_dcp.psutil.net_if_addrs')
+@patch('profinet_dcp.profinet_dcp.L2Socket')
+@patch('profinet_dcp.profinet_dcp.psutil.net_if_addrs')
 def instance_dcp(psutil_net_if_addrs, socket, mock_return):
     """
     Provides a dcp instance with a mocked socket and the mocked socket.
@@ -17,5 +17,5 @@ def instance_dcp(psutil_net_if_addrs, socket, mock_return):
     config.read('testconfig.ini')
     ip = config.get('BasicConfigurations', 'ip')
     assert ip, 'IP-Address is not set'
-    dcp = pnio_dcp.DCP(ip)
+    dcp = DCP(ip)
     return dcp, socket

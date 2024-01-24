@@ -1,21 +1,23 @@
 import binascii
 import random
-import pnio_dcp.protocol
-import pnio_dcp.util
-import pnio_dcp.dcp_constants
+import profinet_dcp.protocol
+import profinet_dcp.util
+import profinet_dcp.dcp_constants
 from collections import namedtuple
 import socket
 import psutil
 import pytest
 
 
-snicaddr = namedtuple("snicaddr", ["family", "address", "netmask", "broadcast", "ptp"])
+snicaddr = namedtuple(
+    "snicaddr", ["family", "address", "netmask", "broadcast", "ptp"])
 
 
 class MockDevice:
     """
     A class to store and acces information about a mocked device. 
     """
+
     def __init__(self, name, mac, ip_conf, err_code, family):
         self.NameOfStation = name
         self.MAC = mac
@@ -36,12 +38,13 @@ class MockReturn:
     testnetz = {'Testnetz': [snicaddr(psutil.AF_LINK, '00-50-56-AC-DD-2E', None, None, None),
                              snicaddr(socket.AF_INET, '10.0.2.124', '255.255.240.0', None, None)]}
     src = '00:50:56:ac:dd:2e'
-    dst = ['00:0c:29:66:47:a5', '00:0e:8c:e5:3c:58', '00:e0:7c:c8:72:58', '40:ec:f8:04:bf:5e', '40:ec:f8:03:b7:df']
+    dst = ['00:0c:29:66:47:a5', '00:0e:8c:e5:3c:58',
+           '00:e0:7c:c8:72:58', '40:ec:f8:04:bf:5e', '40:ec:f8:03:b7:df']
     dst_custom = '01:0e:cf:00:00:00'
     eth_type = 0x8892
     frame_id = None
     service_id = None
-    service_type = pnio_dcp.dcp_constants.ServiceType.RESPONSE
+    service_type = profinet_dcp.dcp_constants.ServiceType.RESPONSE
     devices = {'00:0c:29:66:47:a5': MockDevice('win-4faufud472v', '00:0c:29:66:47:a5', ['10.0.0.251', '255.255.240.0', '10.0.0.1'], b'00', "Win"),
                '00:0e:8c:e5:3c:58': MockDevice('spsw-11', '00:0e:8c:e5:3c:58', ['10.0.0.30', '255.255.240.0', '10.0.0.1'], random.choice([b'01', b'02', b'03']), "SPSW"),
                '00:e0:7c:c8:72:58': MockDevice('cwl-r90g66zd', '00:e0:7c:c8:72:58', ['10.0.4.53', '255.255.240.0', '10.0.0.1'], b'00', "CWL"),
@@ -61,7 +64,6 @@ class MockReturn:
         :rtype: bytes
         """
         return b''.join(binascii.unhexlify(num) for num in mac_address.split(':'))
-
 
     def ip_to_hex(self, ip_conf):
         """
@@ -118,22 +120,26 @@ class MockReturn:
         :rtype: List[bytes]
         """
         self.frame_id = 0xfeff
-        self.service_id = pnio_dcp.dcp_constants.ServiceID.IDENTIFY
+        self.service_id = profinet_dcp.dcp_constants.ServiceID.IDENTIFY
         if len(self.devices[self.dst_custom].NameOfStation) % 2 == 1:
-            name = bytes([0x00, 0x00]) + bytes(self.devices[self.dst_custom].NameOfStation, encoding='ascii') + bytes([0x00])
+            name = bytes([0x00, 0x00]) + bytes(
+                self.devices[self.dst_custom].NameOfStation, encoding='ascii') + bytes([0x00])
             len_name = bytes.fromhex(format(len(name) - 1, '04x'))
         else:
-            name = bytes([0x00, 0x00]) + bytes(self.devices[self.dst_custom].NameOfStation, encoding='ascii')
+            name = bytes(
+                [0x00, 0x00]) + bytes(self.devices[self.dst_custom].NameOfStation, encoding='ascii')
             len_name = bytes.fromhex(format(len(name), '04x'))
         content_name = bytes([0x02, 0x02]) + len_name + name
 
-        ip = bytes([0x00, 0x01]) + self.ip_to_hex(self.devices[self.dst_custom].ip_conf)
+        ip = bytes([0x00, 0x01]) + \
+            self.ip_to_hex(self.devices[self.dst_custom].ip_conf)
         len_ip = bytes.fromhex(format(len(ip), '04x'))
         content_ip = bytes([0x01, 0x02]) + len_ip + ip
 
         family = self.devices[self.dst_custom].Family
         if len(family) % 2 == 1:
-            family = bytes([0x00, 0x00]) + bytes(family, encoding='ascii') + bytes([0x00])
+            family = bytes([0x00, 0x00]) + bytes(family,
+                                                 encoding='ascii') + bytes([0x00])
             len_family = bytes.fromhex(format(len(family) - 1, '04x'))
         else:
             family = bytes([0x00, 0x00]) + bytes(family, encoding='ascii')
@@ -153,21 +159,24 @@ class MockReturn:
         :rtype: List[bytes]
         """
         self.frame_id = 0xfefd
-        self.service_id = pnio_dcp.dcp_constants.ServiceID.GET
+        self.service_id = profinet_dcp.dcp_constants.ServiceID.GET
         content_tail = bytes([0x05, 0x04, 0x0003, 0x000001])
 
         if param == 'IP':
             opt, subopt = 0x01, 0x02
-            content = bytes([0x00, 0x01]) + self.ip_to_hex(self.devices[self.dst_custom].ip_conf)
+            content = bytes([0x00, 0x01]) + \
+                self.ip_to_hex(self.devices[self.dst_custom].ip_conf)
         else:
             opt, subopt = 0x02, 0x02
             if len(self.devices[self.dst_custom].NameOfStation) % 2 == 1:
                 content = bytes([0x00, 0x00]) + bytes(self.devices[self.dst_custom].NameOfStation,
                                                       encoding='ascii') + bytes([0x00])
             else:
-                content = bytes([0x00, 0x00]) + bytes(self.devices[self.dst_custom].NameOfStation, encoding='ascii')
+                content = bytes(
+                    [0x00, 0x00]) + bytes(self.devices[self.dst_custom].NameOfStation, encoding='ascii')
         block_content = content + content_tail
-        self.block = pnio_dcp.protocol.DCPBlockRequest(opt, subopt, len(content) + (1 if len(content) % 2 == 1 else 0), block_content)
+        self.block = profinet_dcp.protocol.DCPBlockRequest(opt, subopt, len(
+            content) + (1 if len(content) % 2 == 1 else 0), block_content)
         return self.compose_response()
 
     def generate_set(self):
@@ -178,9 +187,11 @@ class MockReturn:
         :rtype: List[bytes]
         """
         self.frame_id = 0xfefd
-        self.service_id = pnio_dcp.dcp_constants.ServiceID.SET
-        block_content = bytes([0x02, 0x02]) + binascii.unhexlify(self.devices[self.dst_custom].err_code)
-        self.block = pnio_dcp.protocol.DCPBlockRequest(0x05, 0x04, len(block_content), block_content)
+        self.service_id = profinet_dcp.dcp_constants.ServiceID.SET
+        block_content = bytes(
+            [0x02, 0x02]) + binascii.unhexlify(self.devices[self.dst_custom].err_code)
+        self.block = profinet_dcp.protocol.DCPBlockRequest(
+            0x05, 0x04, len(block_content), block_content)
         return self.compose_response()
 
     def generate_reset(self):
@@ -191,11 +202,13 @@ class MockReturn:
         :rtype: List[bytes]
         """
         self.frame_id = 0xfefd
-        self.service_id = pnio_dcp.dcp_constants.ServiceID.SET
+        self.service_id = profinet_dcp.dcp_constants.ServiceID.SET
         opt, subopt = 0x05, 0x04
         req_opt, req_subopt = 0x05, 0x06
-        block_content = bytes([req_opt, req_subopt]) + binascii.unhexlify(self.devices[self.dst_custom].err_code)
-        self.block = pnio_dcp.protocol.DCPBlockRequest(opt, subopt, len(block_content), block_content)
+        block_content = bytes([req_opt, req_subopt]) + \
+            binascii.unhexlify(self.devices[self.dst_custom].err_code)
+        self.block = profinet_dcp.protocol.DCPBlockRequest(
+            opt, subopt, len(block_content), block_content)
         return self.compose_response()
 
     def compose_response(self):
@@ -204,9 +217,12 @@ class MockReturn:
         :return: dcp response package as bytes
         :rtype: List[bytes]
         """
-        dcp = pnio_dcp.protocol.DCPPacket(self.frame_id, self.service_id, self.service_type, self.xid, 0x0000, len(self.block), payload=self.block)
-        eth = pnio_dcp.protocol.EthernetPacket(self.src, self.dst_custom, self.eth_type, payload=dcp)
+        dcp = profinet_dcp.protocol.DCPPacket(
+            self.frame_id, self.service_id, self.service_type, self.xid, 0x0000, len(self.block), payload=self.block)
+        eth = profinet_dcp.protocol.EthernetPacket(
+            self.src, self.dst_custom, self.eth_type, payload=dcp)
         return [bytes(eth)]
+
 
 @pytest.fixture(scope='function')
 def mock_return():

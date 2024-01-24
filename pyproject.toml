@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "profinet-dcp"
+description = "Discover and configure PROFINET devices with the PROFINET Discovery and basic Configuration Protocol (DCP) protocol."
+readme = { file = "README.md", content-type = "text/markdown" }
+authors = [
+    { name = "Elias Rosch", email = "elias.rosch@festo.com" },
+    { name = "Dominic Schlagenhof", email = "dominic.schlagenhof@codewerk.de" },
+    { name = "Alexander Riedel", email = "alexander.riedel@codewerk.de" },
+]
+license = {text = "MIT"}
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+
+    'Intended Audience :: Developers',
+    'Intended Audience :: Information Technology',
+    'Intended Audience :: System Administrators',
+    'Intended Audience :: Telecommunications Industry',
+
+    'Topic :: Software Development :: Libraries',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: System :: Networking',
+
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX :: Linux',
+
+    'License :: OSI Approved :: MIT License',
+
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+]
+dynamic = ["version"]
+requires-python = ">=3.6"
+dependencies = [
+    'psutil',
+    'importlib_metadata'
+]
+
+[project.urls]
+Documentation = "https://festo-research.gitlab.io/electric-automation/festo-edcon"
+Repository = "https://gitlab.com/festo-research/electric-automation/festo-edcon"
+Changelog = "https://gitlab.com/festo-research/electric-automation/festo-edcon/-/blob/main/CHANGELOG.md"
+
+[project.scripts]
+profinet-dcp = "profinet_dcp.cli.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests"]
+
+[tool.setuptools_scm]

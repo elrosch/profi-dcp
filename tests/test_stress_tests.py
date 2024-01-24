@@ -1,8 +1,8 @@
-import pnio_dcp
 import pytest
 import time
 
 from util import pcap_available, get_ip
+from profinet_dcp.profinet_dcp import DCP
 
 
 @pytest.mark.skip
@@ -23,7 +23,7 @@ class TestStressTests:
         wait_duration = 5
 
         for _ in range(repetitions):
-            dcp = pnio_dcp.DCP(ip)
+            dcp = DCP(ip)
             time.sleep(wait_duration)
             del dcp
             time.sleep(wait_duration)

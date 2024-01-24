@@ -1,7 +1,7 @@
 """
+Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2020 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
-License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
 
 # the multicast address for identify all requests
@@ -27,9 +27,10 @@ class BlockQualifier:
     # Reset to factory with mode communication
     RESET_COMMUNICATION = [0x00, 0x04]
     # Indicate that a value should be stored temporary (value will be discarded after power reset)
-    STORE_TEMPORARY  = [0x00, 0x00]
+    STORE_TEMPORARY = [0x00, 0x00]
     # Used for ControlOption with Suboption other than SuboptionResetToFactory (eg. when flashing LED)
     RESERVED = [0x00, 0x00]
+
 
 class ResetFactoryModes:
     """Reset to factory modes"""
@@ -39,6 +40,7 @@ class ResetFactoryModes:
     RESET_ALL_DATA = [0x00, 0x8]
     RESET_DEVICE = [0x00, 0x10]
     RESET_AND_RESTORE = [0x00, 0x12]
+
 
 class ServiceType:
     """Service type of a DCP packet"""

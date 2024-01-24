@@ -1,7 +1,7 @@
 """
+Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2020 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
-License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
 import random
 import re
@@ -10,14 +10,13 @@ import time
 
 import psutil
 
-import pnio_dcp.dcp_constants as dcp_constants
-import pnio_dcp.util as util
-from pnio_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier, ResetFactoryModes
-from pnio_dcp.error import DcpTimeoutError
-from pnio_dcp.l2socket import L2Socket
-from pnio_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest, DCPBlockRequestGet
-
-logger = util.logger
+import profinet_dcp.dcp_constants as dcp_constants
+import profinet_dcp.util as util
+from profinet_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier, ResetFactoryModes
+from profinet_dcp.error import DcpTimeoutError
+from profinet_dcp.l2socket import L2Socket
+from profinet_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest, DCPBlockRequestGet
+from profinet_dcp.utils.logging import Logging
 
 
 class Device:
@@ -55,13 +54,15 @@ class DCP:
         :param ip: The ip address used to select the network interface.
         :type ip: string
         """
-        self.src_mac, network_interface = self.__get_network_interface_and_mac_address(ip)
+        self.src_mac, network_interface = self.__get_network_interface_and_mac_address(
+            ip)
 
         self.default_timeout = 7  # default timeout for requests (in seconds)
         self.identify_all_timeout = 7  # timeout to receive all responses for identify_all
 
         # the XID is the id of the current transaction and can be used to identify the responses to a request
-        self.__xid = int(random.getrandbits(32))  # initialize it with a random value
+        # initialize it with a random value
+        self.__xid = int(random.getrandbits(32))
 
         # This filter in BPF format filters all unrelated packets (i.e. wrong mac address or ether type) before they are
         # processed by python. This solves issues in high traffic networks, as otherwise packets might be missed under
@@ -84,20 +85,24 @@ class DCP:
         for network_interface, addresses in psutil.net_if_addrs().items():
             addresses_by_family = {}
             for address in addresses:
-                addresses_by_family.setdefault(address.family, []).append(address)
+                addresses_by_family.setdefault(
+                    address.family, []).append(address)
 
             # try to match either ipv4 or ipv6 address, ipv6 addresses may have additional suffix
-            ipv4_match = any(address.address == ip for address in addresses_by_family.get(socket.AF_INET, []))
-            ipv6_match = any(address.address.startswith(ip) for address in addresses_by_family.get(socket.AF_INET6, []))
+            ipv4_match = any(address.address == ip for address in addresses_by_family.get(
+                socket.AF_INET, []))
+            ipv6_match = any(address.address.startswith(ip)
+                             for address in addresses_by_family.get(socket.AF_INET6, []))
 
             if ipv4_match or ipv6_match:
                 if not addresses_by_family.get(psutil.AF_LINK, False):
-                    logger.warning(f"Found network interface matching the ip {ip} but no corresponding mac address "
-                                   f"with AF_LINK = {psutil.AF_LINK}")
+                    Logging.logger.warning(f"Found network interface matching the ip {ip} but no corresponding mac address "
+                                           f"with AF_LINK = {psutil.AF_LINK}")
                     continue
                 mac_address = addresses_by_family[psutil.AF_LINK][0].address
                 return mac_address.replace('-', ':').lower(), network_interface
-        logger.debug(f"Could not find a network interface for ip {ip} in {psutil.net_if_addrs()}")
+        Logging.logger.debug(
+            f"Could not find a network interface for ip {ip} in {psutil.net_if_addrs()}")
         raise ValueError(f"Could not find a network interface for ip {ip}.")
 
     def identify_all(self, timeout=None):
@@ -112,7 +117,8 @@ class DCP:
         dst_mac = dcp_constants.PROFINET_MULTICAST_MAC_IDENTIFY
         option, suboption = Option.ALL
         response_delay = dcp_constants.RESPONSE_DELAY
-        self.__send_request(dst_mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY, option, suboption, response_delay=response_delay)
+        self.__send_request(dst_mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY,
+                            option, suboption, response_delay=response_delay)
 
         # Receive all responses until the timeout occurs
         timeout = self.identify_all_timeout if timeout is None else timeout
@@ -135,11 +141,13 @@ class DCP:
         """
         option, suboption = Option.ALL
         response_delay = dcp_constants.RESPONSE_DELAY
-        self.__send_request(mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY, option, suboption, response_delay=response_delay)
+        self.__send_request(mac, FrameID.IDENTIFY_REQUEST, ServiceID.IDENTIFY,
+                            option, suboption, response_delay=response_delay)
 
         response = self.__read_response()
         if not response:
-            logger.debug(f"Timeout: no answer from device with MAC {mac}")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac}")
             raise DcpTimeoutError
         return response
 
@@ -157,7 +165,8 @@ class DCP:
         :rtype: ResponseCode
         """
         # To pack the ip addresses, convert them to bytes and concat them
-        packed_ip_conf = b''.join([util.ip_address_to_bytes(ip_address) for ip_address in ip_conf])
+        packed_ip_conf = b''.join(
+            [util.ip_address_to_bytes(ip_address) for ip_address in ip_conf])
 
         if store_permanent:
             value = bytes(BlockQualifier.STORE_PERMANENT) + packed_ip_conf
@@ -165,15 +174,17 @@ class DCP:
             value = bytes(BlockQualifier.STORE_TEMPORARY) + packed_ip_conf
 
         option, suboption = Option.IP_ADDRESS
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.SET, option, suboption, value)
 
         response = self.__read_response(set_request=True)
 
         if response is None:
-            logger.debug(f"Timeout: no answer from device with MAC {mac} to set ip request.")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac} to set ip request.")
             raise DcpTimeoutError
         elif not response:
-            logger.debug(f"Set unsuccessful: {response.get_message()}")
+            Logging.logger.debug(f"Set unsuccessful: {response.get_message()}")
 
         return response
 
@@ -192,7 +203,8 @@ class DCP:
         """
         valid_pattern = re.compile(r"^[a-z][a-zA-Z0-9\-.]*$")
         if not re.match(valid_pattern, name):
-            raise ValueError('Name should correspond DNS standard. A string of invalid format provided.')
+            raise ValueError(
+                'Name should correspond DNS standard. A string of invalid format provided.')
         name = name.lower()
 
         if store_permanent:
@@ -203,15 +215,17 @@ class DCP:
         value = bytes(block_qualifiyer) + bytes(name, encoding='ascii')
 
         option, suboption = Option.NAME_OF_STATION
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.SET, option, suboption, value)
 
         response = self.__read_response(set_request=True)
 
         if response is None:
-            logger.debug(f"Timeout: no answer from device with MAC {mac} to set name request.")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac} to set name request.")
             raise DcpTimeoutError
         elif not response:
-            logger.debug(f"Set unsuccessful: {response.get_message()}")
+            Logging.logger.debug(f"Set unsuccessful: {response.get_message()}")
 
         return response
 
@@ -224,11 +238,13 @@ class DCP:
         :rtype: string
         """
         option, suboption = Option.IP_ADDRESS
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.GET, option, suboption)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.GET, option, suboption)
 
         response = self.__read_response()
         if not response:
-            logger.debug(f"Timeout: no answer from device with MAC {mac}")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac}")
             raise DcpTimeoutError
         return response.IP
 
@@ -241,11 +257,13 @@ class DCP:
         :rtype: string
         """
         option, suboption = Option.NAME_OF_STATION
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.GET, option, suboption)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.GET, option, suboption)
 
         response = self.__read_response()
         if not response:
-            logger.debug(f"Timeout: no answer from device with MAC {mac}")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac}")
             raise DcpTimeoutError
         return response.name_of_station
 
@@ -262,15 +280,18 @@ class DCP:
         value = bytes(BlockQualifier.RESERVED)
         value += bytes(dcp_constants.LED_BLINK_VALUE)
         option, suboption = Option.BLINK_LED
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.SET, option, suboption, value)
 
         response = self.__read_response(set_request=True)
 
         if response is None:
-            logger.debug(f"Timeout: no answer from device with MAC {mac} to reset request.")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac} to reset request.")
             raise DcpTimeoutError
         elif not response:
-            logger.debug(f"LED flashing unsuccessful: {response.get_message()}")
+            Logging.logger.debug(
+                f"LED flashing unsuccessful: {response.get_message()}")
 
         return response
 
@@ -288,15 +309,18 @@ class DCP:
         """
         option, suboption = Option.RESET_TO_FACTORY
         value = bytes(mode)
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.SET, option, suboption, value)
 
         response = self.__read_response(set_request=True)
 
         if response is None:
-            logger.debug(f"Timeout: no answer from device with MAC {mac} to reset request.")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac} to reset request.")
             raise DcpTimeoutError
         elif not response:
-            logger.debug(f"Reset unsuccessful: {response.get_message()}")
+            Logging.logger.debug(
+                f"Reset unsuccessful: {response.get_message()}")
 
         return response
 
@@ -311,15 +335,18 @@ class DCP:
         """
         option, suboption = Option.RESET_FACTORY
         value = bytes(BlockQualifier.RESERVED)
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.SET, option, suboption, value)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.SET, option, suboption, value)
 
         response = self.__read_response(set_request=True)
 
         if response is None:
-            logger.debug(f"Timeout: no answer from device with MAC {mac} to reset request.")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac} to reset request.")
             raise DcpTimeoutError
         elif not response:
-            logger.debug(f"Reset unsuccessful: {response.get_message()}")
+            Logging.logger.debug(
+                f"Reset unsuccessful: {response.get_message()}")
 
         return response
 
@@ -352,10 +379,12 @@ class DCP:
 
         # Create DCP frame
         service_type = ServiceType.REQUEST
-        dcp_packet = DCPPacket(frame_id, service, service_type, self.__xid, response_delay=response_delay, payload=block)
+        dcp_packet = DCPPacket(frame_id, service, service_type,
+                               self.__xid, response_delay=response_delay, payload=block)
 
         # Create ethernet frame
-        ethernet_packet = EthernetPacket(dst_mac, self.src_mac, dcp_constants.ETHER_TYPE, payload=dcp_packet)
+        ethernet_packet = EthernetPacket(
+            dst_mac, self.src_mac, dcp_constants.ETHER_TYPE, payload=dcp_packet)
 
         # Send the request
         self.__socket.send(bytes(ethernet_packet))
@@ -383,7 +412,8 @@ class DCP:
             received_packet = self.__receive_packet()
 
             if received_packet:
-                parsed_response = self.__parse_raw_packet(received_packet, set_request)
+                parsed_response = self.__parse_raw_packet(
+                    received_packet, set_request)
                 if parsed_response is not None:
                     return parsed_response
 
@@ -441,7 +471,8 @@ class DCP:
         # Process each DCP data block in the payload and modify the attributes of the device accordingly
         while length > 6:
             device, block_len = self.__process_block(dcp_blocks, device)
-            dcp_blocks = dcp_blocks[block_len + 4:]  # advance to the start of the next block
+            # advance to the start of the next block
+            dcp_blocks = dcp_blocks[block_len + 4:]
             length -= 4 + block_len
 
         return device
@@ -459,7 +490,7 @@ class DCP:
         :rtype: Optional[DCPPacket]
         """
         valid_ethernet = ethernet_packet.destination == self.src_mac \
-                         and ethernet_packet.ether_type == dcp_constants.ETHER_TYPE
+            and ethernet_packet.ether_type == dcp_constants.ETHER_TYPE
 
         dcp_packet = DCPPacket(data=ethernet_packet.payload)
         valid_dcp = dcp_packet.service_type == ServiceType.RESPONSE and dcp_packet.xid == self.__xid

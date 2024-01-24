@@ -1,5 +1,5 @@
 [paths]
 source =
-    env\Lib\site-packages\pnio_dcp
-    C:\GitLab-Runner\builds\*\*\shacks\python\*\tests\env\Lib\site-packages\pnio_dcp\
-    /builds/shacks/python/*/tests/env/lib/python*/site-packages/pnio_dcp
+    env\Lib\site-packages\profinet_dcp
+    C:\GitLab-Runner\builds\*\*\shacks\python\*\tests\env\Lib\site-packages\profinet_dcp\
+    /builds/shacks/python/*/tests/env/lib/python*/site-packages/profinet_dcp

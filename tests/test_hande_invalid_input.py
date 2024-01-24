@@ -2,7 +2,7 @@ import random
 import pytest
 from unittest.mock import patch
 
-import pnio_dcp
+from profinet_dcp.profinet_dcp import DCP
 
 
 class TestInvalidInput:
@@ -10,7 +10,7 @@ class TestInvalidInput:
     Test the behavior for some invalid input.
     """
 
-    @patch('pnio_dcp.pnio_dcp.psutil')
+    @patch('profinet_dcp.profinet_dcp.psutil')
     def test_init_with_invalid_ip(self, psutil, mock_return):
         """
         Test the init of the dcp class with invalid ip addresses.
@@ -24,7 +24,7 @@ class TestInvalidInput:
 
         for ip in invalid_ips:
             with pytest.raises(ValueError):
-                pnio_dcp.DCP(ip)
+                DCP(ip)
 
     def test_provide_invalid_ip(self, mock_return, instance_dcp):
         """
@@ -37,7 +37,8 @@ class TestInvalidInput:
                       ['10.0.0.30', '255.255.240.0', '-10.0.0.1']]
         test_device_mac = random.choice(mock_return.dst)
         mock_return.dst_custom = test_device_mac
-        socket().recv.return_value = mock_return.identify_response('SET', xid=instance_dcp._DCP__xid + 1)
+        socket().recv.return_value = mock_return.identify_response(
+            'SET', xid=instance_dcp._DCP__xid + 1)
         socket().recv.return_value.append(TimeoutError)
         socket().recv.side_effect = socket().recv.return_value
         for ip_conf in invalid_ip:
@@ -56,7 +57,8 @@ class TestInvalidInput:
         test_device_mac = random.choice(mock_return.dst)
 
         mock_return.dst_custom = test_device_mac
-        socket().recv.return_value = mock_return.identify_response('SET', xid=instance_dcp._DCP__xid + 1)
+        socket().recv.return_value = mock_return.identify_response(
+            'SET', xid=instance_dcp._DCP__xid + 1)
         socket().recv.return_value.append(TimeoutError)
         socket().recv.side_effect = socket().recv.return_value
 
@@ -64,7 +66,8 @@ class TestInvalidInput:
         exception_occured = False
         for invalid_name in names:
             try:
-                ret_msg = instance_dcp.set_name_of_station(test_device_mac, invalid_name)
+                ret_msg = instance_dcp.set_name_of_station(
+                    test_device_mac, invalid_name)
             except BaseException:
                 exception_occured = True
             assert exception_occured

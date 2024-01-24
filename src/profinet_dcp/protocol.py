@@ -1,10 +1,10 @@
 """
+Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2020 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
-License: MIT License see LICENSE.md in the pnio_dcp root directory.
 """
 import struct
-from pnio_dcp import util, dcp_constants
+from profinet_dcp import util, dcp_constants
 import logging
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,8 @@ class Packet:
         :param kwargs: Can be used to initialize the header fields defined in HEADER_FIELD_FORMATS
         :type kwargs: Any
         """
-        self.header_format = ">" + "".join([field.field_format for field in self.HEADER_FIELD_FORMATS])
+        self.header_format = ">" + \
+            "".join([field.field_format for field in self.HEADER_FIELD_FORMATS])
         self.header_length = struct.calcsize(self.header_format)
 
         self.payload = 0
@@ -90,10 +91,13 @@ class Packet:
         if data:
             self.unpack(data)
         else:
-            valid_header_fields = [field.name for field in self.HEADER_FIELD_FORMATS]
-            invalid_kwargs = [name for name in kwargs.keys() if name not in valid_header_fields]
+            valid_header_fields = [
+                field.name for field in self.HEADER_FIELD_FORMATS]
+            invalid_kwargs = [name for name in kwargs.keys(
+            ) if name not in valid_header_fields]
             if invalid_kwargs:
-                logger.warning(f"Invalid kwargs passed to Packet for keys: {invalid_kwargs}")
+                logger.warning(
+                    f"Invalid kwargs passed to Packet for keys: {invalid_kwargs}")
 
             for name, value in kwargs.items():
                 if name in valid_header_fields:
@@ -108,7 +112,8 @@ class Packet:
         :param data: The packet packed to a bytes object i.e. by Packet.pack()
         :type data: bytes
         """
-        unpacked_header = struct.unpack(self.header_format, data[:self.header_length])
+        unpacked_header = struct.unpack(
+            self.header_format, data[:self.header_length])
         for field, value in zip(self.HEADER_FIELD_FORMATS, unpacked_header):
             setattr(self, field.name, field.unpack(value))
 
@@ -158,8 +163,10 @@ class Packet:
 class EthernetPacket(Packet):
     """An Ethernet packet consisting of destination and source mac address and an ether type."""
     HEADER_FIELD_FORMATS = [
-        HeaderField("destination", "6s", None, util.mac_address_to_bytes, util.mac_address_to_string),
-        HeaderField("source", "6s", None, util.mac_address_to_bytes, util.mac_address_to_string),
+        HeaderField("destination", "6s", None,
+                    util.mac_address_to_bytes, util.mac_address_to_string),
+        HeaderField("source", "6s", None, util.mac_address_to_bytes,
+                    util.mac_address_to_string),
         HeaderField("ether_type", "H"),
     ]
 
@@ -184,7 +191,8 @@ class EthernetPacket(Packet):
         if data:
             super().__init__(data=data)
         else:
-            super().__init__(destination=destination, source=source, ether_type=ether_type, payload=payload)
+            super().__init__(destination=destination, source=source,
+                             ether_type=ether_type, payload=payload)
 
 
 class DCPPacket(Packet):
@@ -297,18 +305,18 @@ class DCPBlockRequestGet(Packet):
     ]
 
     def __init__(self, opt=None, subopt=None):
-            """
-            Create a new DCP block for a DCP get-request packet. Header fields are initialized
-            from the given arguments.
-            :param opt: The DCP option.
-            :type opt: int
-            :param subopt: The DCP sub-option.
-            :type subopt: int
-            """
-            self.opt = None
-            self.subopt = None
+        """
+        Create a new DCP block for a DCP get-request packet. Header fields are initialized
+        from the given arguments.
+        :param opt: The DCP option.
+        :type opt: int
+        :param subopt: The DCP sub-option.
+        :type subopt: int
+        """
+        self.opt = None
+        self.subopt = None
 
-            super().__init__(opt=opt, subopt=subopt)
+        super().__init__(opt=opt, subopt=subopt)
 
 
 class DCPBlock(Packet):
