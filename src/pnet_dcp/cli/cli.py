@@ -10,9 +10,6 @@ def main():
     # Bus agnostic options
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-a', '--adapter-ip-address', default="192.168.0.1",
-                        help='IP address of the network adapter to use (default: %(default)s).')
-
     # Bus specific options
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='increase output verbosity')
@@ -26,7 +23,7 @@ def main():
 
     args = parser.parse_args()
     if args.verbose:
-        Logging(logging.INFO)
+        Logging(logging.DEBUG)
     else:
         Logging(logging.WARNING)
 

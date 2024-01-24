@@ -9,6 +9,7 @@ import socket
 import time
 
 import psutil
+import ipaddress
 
 import pnet_dcp.dcp_constants as dcp_constants
 import pnet_dcp.util as util
@@ -54,7 +55,7 @@ class DCP:
         :param ip: The ip address used to select the network interface.
         :type ip: string
         """
-        self.src_mac, network_interface = self.__get_network_interface_and_mac_address(
+        self.src_mac, network_interface, if_ip_address = self.__get_network_interface_and_mac_address(
             ip)
 
         self.default_timeout = 7  # default timeout for requests (in seconds)
@@ -68,20 +69,21 @@ class DCP:
         # processed by python. This solves issues in high traffic networks, as otherwise packets might be missed under
         # heavy load when python is not fast enough processing them.
         socket_filter = f"ether host {self.src_mac} and ether proto {dcp_constants.ETHER_TYPE}"
-        self.__socket = L2Socket(ip=ip, interface=network_interface, bpf_filter=socket_filter,
+        self.__socket = L2Socket(ip=if_ip_address, interface=network_interface, bpf_filter=socket_filter,
                                  protocol=dcp_constants.ETHER_TYPE)
 
     @staticmethod
-    def __get_network_interface_and_mac_address(ip):
+    def __get_network_interface_and_mac_address(ip_address, subnet_mask='255.255.255.0'):
         """
         Get the mac address and name of the network interface corresponding to the given IP address by iterating over
         all available network interfaces and comparing the IP addresses.
         If no interface with the given IP address is found, a ValueError is raised.
-        :param ip: The IP address to select the network interface with.
-        :type ip: string
+        :param ip_address: The IP address to select the network interface with.
+        :type ip_address: string
         :return: MAC-address, Interface name
         :rtype: Tuple[string, string]
         """
+        stats = psutil.net_if_stats()
         for network_interface, addresses in psutil.net_if_addrs().items():
             addresses_by_family = {}
             for address in addresses:
@@ -89,21 +91,33 @@ class DCP:
                     address.family, []).append(address)
 
             # try to match either ipv4 or ipv6 address, ipv6 addresses may have additional suffix
-            ipv4_match = any(address.address == ip for address in addresses_by_family.get(
+            ipv4_match = any(address.address == ip_address for address in addresses_by_family.get(
                 socket.AF_INET, []))
-            ipv6_match = any(address.address.startswith(ip)
+            ipv6_match = any(address.address.startswith(ip_address)
                              for address in addresses_by_family.get(socket.AF_INET6, []))
 
-            if ipv4_match or ipv6_match:
+            network = ipaddress.ip_network(
+                f"{ip_address}/{subnet_mask}", strict=False)
+            network_match = any(
+                ipaddress.ip_address(address.address) in network for address in addresses_by_family.get(socket.AF_INET, []))
+            if ipv4_match or ipv6_match or network_match:
                 if not addresses_by_family.get(psutil.AF_LINK, False):
-                    Logging.logger.warning(f"Found network interface matching the ip {ip} but no corresponding mac address "
+                    Logging.logger.warning(f"Found network interface '{network_interface}' matching the ip {ip_address} but no corresponding mac address "
                                            f"with AF_LINK = {psutil.AF_LINK}")
                     continue
+                if not (network_interface in stats and getattr(stats[network_interface], "isup")):
+                    Logging.logger.warning(
+                        f"Found network interface '{network_interface}' matching the ip {ip_address} but is not up.")
+                    continue
                 mac_address = addresses_by_family[psutil.AF_LINK][0].address
-                return mac_address.replace('-', ':').lower(), network_interface
+                if_ip_address = addresses_by_family[socket.AF_INET][0].address
+                Logging.logger.info(
+                    f"Found network interface '{network_interface}' by ip {ip_address}")
+                return mac_address.replace('-', ':').lower(), network_interface, if_ip_address
         Logging.logger.debug(
-            f"Could not find a network interface for ip {ip} in {psutil.net_if_addrs()}")
-        raise ValueError(f"Could not find a network interface for ip {ip}.")
+            f"Could not find a network interface for ip {ip_address} in {psutil.net_if_addrs()}")
+        raise ValueError(
+            f"Could not find a network interface for ip {ip_address}.")
 
     def identify_all(self, timeout=None):
         """

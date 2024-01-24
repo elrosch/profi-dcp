@@ -29,7 +29,7 @@ def log_device(device):
 
 def set_ip_func(args):
     """Executes subcommand based on provided arguments"""
-    dcp = DCP(args.adapter_ip_address)
+    dcp = DCP(args.ip_address)
 
     identified_devices = dcp.identify_all()
     Logging.logger.info(f"Found {len(identified_devices)} devices:")
@@ -45,13 +45,13 @@ def set_ip_func(args):
             Logging.logger.error(f"MAC {args.mac} not found")
             return
 
-    Logging.logger.info(f"Set IP address for '{device.name_of_station}'")
+    Logging.logger.info(f"Set ip address for '{device.name_of_station}'")
 
     ip_conf = [args.ip_address, args.subnet_mask, args.gateway_address]
     response = dcp.set_ip_address(
         mac=device.MAC, ip_conf=ip_conf, store_permanent=args.permanent)
     if not response:
         Logging.logger.error(
-            f"Set IP address failed: {response.get_message()}")
+            f"Setting of ip address failed: {response.get_message()}")
         return
     Logging.logger.info(f"Successfully applied {ip_conf}")
