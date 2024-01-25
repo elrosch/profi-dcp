@@ -1,16 +1,46 @@
-include:
-  - project: 'shacks/python/pyshacks_ci_config'
-    file: 'pyshack.gitlab-ci.yml'
+# This file is a template, and might need editing before it works on your project.
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
-default:
-    tags:
-        - pcap
-        - windows
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
 
-stages:
-  - build
-  - setup
-  - tests
-  - analyse
-  - deploy
+image: "python:3.10-bullseye"
 
+# Run branch pipeline only if no MR pipeline exists
+workflow:
+  rules:
+    - if: $CI_PIPELINE_TRIGGERED
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+# List of stages for jobs, and their order of execution
+stages:          
+  - test
+  - docs
+  - changelogtest
+  - upload
+
+unit-test-job:   # This job runs in the test stage.
+  stage: test    # It only starts when the job in the build stage completes successfully.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  before_script:
+    - python -m pip install pytest pytest-cov
+    - python -m pip install .
+  script:
+    - pytest tests -v --cov=pnet_dcp
+
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'

@@ -16,7 +16,7 @@ def instance_dcp(psutil_net_if_stats, psutil_net_if_addrs, socket, mock_return):
     psutil_net_if_stats.return_value = mock_return.testnet_stats
 
     config = configparser.ConfigParser()
-    config.read('testconfig.ini')
+    config.read('tests/testconfig.ini')
     ip = config.get('BasicConfigurations', 'ip')
     assert ip, 'IP-Address is not set'
     dcp = DCP(ip)
