@@ -40,7 +40,7 @@ dynamic = ["version"]
 requires-python = ">=3.6"
 dependencies = [
     'psutil',
-    'importlib_metadata'
+    'importlib_metadata',
     'rich'
 ]
 
