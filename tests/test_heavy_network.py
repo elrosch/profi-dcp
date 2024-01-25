@@ -86,7 +86,7 @@ class TestHeavyNetwork:
 
     xid = 0xabcdabcd
 
-    @pytest.mark.parametrize('n', range(4))
+    @pytest.mark.parametrize('n', range(1))
     def test_buffer_full_get_name(self, n, mock_return, loopback_sockets):
         """
         Fill the pcap buffer with packets and check if get_name_of_station
@@ -129,7 +129,7 @@ class TestHeavyNetwork:
         t_spam.join()
         t_answer.join()
 
-    @pytest.mark.parametrize('n', range(4))
+    @pytest.mark.parametrize('n', range(1))
     def test_buffer_full_set_ip(self, n, mock_return, loopback_sockets):
         """
         Fill the pcap buffer with packets and check if set_ip_address

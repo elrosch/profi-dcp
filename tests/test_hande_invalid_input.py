@@ -15,7 +15,7 @@ class TestInvalidInput:
         """
         Test the init of the dcp class with invalid ip addresses.
         """
-        psutil.net_if_addrs.return_value = mock_return.testnetz
+        psutil.net_if_addrs.return_value = mock_return.testnet_addrs
 
         invalid_ips = ["0.0.0.0",
                        "not an ip",

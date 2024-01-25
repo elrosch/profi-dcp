@@ -12,6 +12,8 @@ import pytest
 snicaddr = namedtuple(
     "snicaddr", ["family", "address", "netmask", "broadcast", "ptp"])
 
+snistat = namedtuple("snistat", ["isup"])
+
 
 class MockDevice:
     """
@@ -35,8 +37,10 @@ class MockReturn:
     This class provides some sample mocked devices for testing and functions to mock
     DCP packets.
     """
-    testnetz = {'Testnetz': [snicaddr(psutil.AF_LINK, '00-50-56-AC-DD-2E', None, None, None),
-                             snicaddr(socket.AF_INET, '10.0.2.124', '255.255.240.0', None, None)]}
+    testnet_addrs = {'Testnet': [snicaddr(psutil.AF_LINK, '00-50-56-AC-DD-2E', None, None, None),
+                                 snicaddr(socket.AF_INET, '10.0.2.124', '255.255.240.0', None, None)]}
+    testnet_stats = {'Testnet': snistat(True)}
+
     src = '00:50:56:ac:dd:2e'
     dst = ['00:0c:29:66:47:a5', '00:0e:8c:e5:3c:58',
            '00:e0:7c:c8:72:58', '40:ec:f8:04:bf:5e', '40:ec:f8:03:b7:df']
