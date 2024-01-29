@@ -3,6 +3,7 @@ Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2021 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
 """
+
 from collections import namedtuple
 
 from profi_dcp.l2socket.winpcap import (

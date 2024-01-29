@@ -1,4 +1,5 @@
 """CLI Tool that distributes subcommands"""
+
 import argparse
 import logging
 from profi_dcp.cli.set_ip import add_set_ip_parser

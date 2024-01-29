@@ -1,4 +1,5 @@
 """CLI Tool to set IP address."""
+
 from profi_dcp.profi_dcp import DCP
 from profi_dcp.utils.logging import Logging
 

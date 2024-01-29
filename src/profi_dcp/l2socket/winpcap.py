@@ -3,6 +3,7 @@ Copyright (c) 2024 Elias Rosch, Esslingen.
 Copyright (c) 2021 Codewerk GmbH, Karlsruhe.
 All Rights Reserved.
 """
+
 import ctypes
 import os
 import pathlib
