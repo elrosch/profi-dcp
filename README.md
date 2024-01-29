@@ -1,4 +1,4 @@
-# PROFINET-DCP
+# PROFI-DCP
 
 This is a fork from [pnio_dcp](https://gitlab.com/pyshacks/pnio_dcp).
 
