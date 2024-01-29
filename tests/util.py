@@ -3,7 +3,7 @@ import psutil
 import logging
 import socket
 
-from pnet_dcp.l2socket.pcap_wrapper import PcapWrapper
+from profi_dcp.l2socket.pcap_wrapper import PcapWrapper
 
 
 def pcap_available():

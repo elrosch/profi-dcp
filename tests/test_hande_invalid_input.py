@@ -2,7 +2,7 @@ import random
 import pytest
 from unittest.mock import patch
 
-from pnet_dcp.pnet_dcp import DCP
+from profi_dcp.profi_dcp import DCP
 
 
 class TestInvalidInput:
@@ -10,7 +10,7 @@ class TestInvalidInput:
     Test the behavior for some invalid input.
     """
 
-    @patch('pnet_dcp.pnet_dcp.psutil')
+    @patch('profi_dcp.profi_dcp.psutil')
     def test_init_with_invalid_ip(self, psutil, mock_return):
         """
         Test the init of the dcp class with invalid ip addresses.
@@ -51,7 +51,7 @@ class TestInvalidInput:
 
     def test_provide_invalid_name(self, mock_return, instance_dcp):
         """
-        Test set_name_of_station with invalid pnet names.
+        Test set_name_of_station with invalid profi names.
         """
         instance_dcp, socket = instance_dcp
         test_device_mac = random.choice(mock_return.dst)

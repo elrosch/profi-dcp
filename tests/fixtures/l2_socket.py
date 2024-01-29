@@ -1,7 +1,7 @@
 import pytest
-from pnet_dcp.l2socket import L2Socket
+from profi_dcp.l2socket import L2Socket
 
-from pnet_dcp.l2socket.l2socket import L2PcapSocket
+from profi_dcp.l2socket.l2socket import L2PcapSocket
 from util import get_ip, get_network_interface
 
 

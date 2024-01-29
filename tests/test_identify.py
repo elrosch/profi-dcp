@@ -1,6 +1,6 @@
 import itertools
 import pytest
-from pnet_dcp.pnet_dcp import DcpTimeoutError, Device
+from profi_dcp.profi_dcp import DcpTimeoutError, Device
 from socket import timeout
 
 

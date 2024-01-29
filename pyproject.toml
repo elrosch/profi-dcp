@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pnet-dcp"
+name = "profi-dcp"
 description = "Discover and configure PROFINET devices with the PROFINET Discovery and basic Configuration Protocol (DCP) protocol."
 readme = { file = "README.md", content-type = "text/markdown" }
 authors = [
@@ -50,7 +50,7 @@ Repository = "https://gitlab.com/festo-research/electric-automation/festo-edcon"
 Changelog = "https://gitlab.com/festo-research/electric-automation/festo-edcon/-/blob/main/CHANGELOG.md"
 
 [project.scripts]
-pnet-dcp = "pnet_dcp.cli.cli:main"
+profi-dcp = "profi_dcp.cli.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -11,13 +11,13 @@ import time
 import psutil
 import ipaddress
 
-import pnet_dcp.dcp_constants as dcp_constants
-import pnet_dcp.util as util
-from pnet_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier, ResetFactoryModes
-from pnet_dcp.error import DcpTimeoutError
-from pnet_dcp.l2socket import L2Socket
-from pnet_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest, DCPBlockRequestGet
-from pnet_dcp.utils.logging import Logging
+import profi_dcp.dcp_constants as dcp_constants
+import profi_dcp.util as util
+from profi_dcp.dcp_constants import ServiceType, ServiceID, Option, FrameID, BlockQualifier, ResetFactoryModes
+from profi_dcp.error import DcpTimeoutError
+from profi_dcp.l2socket import L2Socket
+from profi_dcp.protocol import DCPPacket, EthernetPacket, DCPBlock, DCPBlockRequest, DCPBlockRequestGet
+from profi_dcp.utils.logging import Logging
 
 
 class Device:

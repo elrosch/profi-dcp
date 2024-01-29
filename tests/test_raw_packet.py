@@ -1,6 +1,6 @@
 import itertools
 import pytest
-from pnet_dcp.dcp_constants import ResetFactoryModes
+from profi_dcp.dcp_constants import ResetFactoryModes
 from protocol_constants import MULTICAST_PN_ADDRESS, DCPHeader, ServiceId, ServiceType, ResponseDelay, Option, SubOption, BlockQualifier, SignalValue
 
 

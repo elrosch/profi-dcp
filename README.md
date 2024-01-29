@@ -5,17 +5,15 @@ This is a fork from [pnio_dcp](https://gitlab.com/pyshacks/pnio_dcp).
 A simple Python library to send and receive messages with the Profinet Discovery and basic Configuration Protocol (DCP) protocol.
 It can send requests and parse the corresponding responses to identify devices over the network, get and set their parameters or reset them to factory settings.
 
-Original source code: [https://gitlab.com/pyshacks/pnio_dcp](https://gitlab.com/pyshacks/pnio_dcp)
-
 ## Installation
 
-The PNIO-DCP package itself can be installed via `pip` after cloning the repository 
+The PROFI-DCP package itself can be installed via `pip` after cloning the repository 
 ```sh
 pip install <path to project root>
 ```
 or from pypi with
 ```sh
-pip install pnet-dcp
+pip install profi-dcp
 ```
 It was tested with Python 3.6, other Python versions might work as well.
 
@@ -34,18 +32,18 @@ This section gives a short overview of the available features and how to use the
 
 Create a new DCP instance with
 ```python
-from pnio_dcp import DCP
+from profi_dcp import DCP
 ip = "10.0.0.76"
-dcp = pnio_dcp.DCP(ip)
+dcp = profi_dcp.DCP(ip)
 ```
 where the given IP address is the IP of the host machine in the network to use for DCP communication.
 
 All currently available requests are described in the following.  
-All requests except `identify_all` will raise a `pnio_dcp.DcpTimeoutError` if the requested device does not answer within the allowed time frame (currently 7s).
+All requests except `identify_all` will raise a `profi_dcp.DcpTimeoutError` if the requested device does not answer within the allowed time frame (currently 7s).
 
 ### Identify Request
 Identify requests can be used to identify DCP devices in the network. 
-The identified devices are always returned as pnio_dcp.Device objects.
+The identified devices are always returned as profi_dcp.Device objects.
 
 To identify all devices in the network, use
 ```python
@@ -141,4 +139,5 @@ modules to factory values.
 This project is licensed under the MIT license.
 
 MIT © 2024 Elias Rosch, Esslingen
+
 MIT © 2020-2023 Codewerk GmbH, Karlsruhe
