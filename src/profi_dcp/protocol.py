@@ -13,7 +13,14 @@ logger = logging.getLogger(__name__)
 class HeaderField:
     """Used to describe a header field in a packet header."""
 
-    def __init__(self, name, field_format, default_value=None, pack_function=None, unpack_function=None):
+    def __init__(
+        self,
+        name,
+        field_format,
+        default_value=None,
+        pack_function=None,
+        unpack_function=None,
+    ):
         """
         Defines a field in a packet header. At least a name and format must be provided. Optionally, a default value
         can be given or additional pack and unpack functions to apply before/after packing/unpacking a value.
@@ -82,8 +89,9 @@ class Packet:
         :param kwargs: Can be used to initialize the header fields defined in HEADER_FIELD_FORMATS
         :type kwargs: Any
         """
-        self.header_format = ">" + \
-            "".join([field.field_format for field in self.HEADER_FIELD_FORMATS])
+        self.header_format = ">" + "".join(
+            [field.field_format for field in self.HEADER_FIELD_FORMATS]
+        )
         self.header_length = struct.calcsize(self.header_format)
 
         self.payload = 0
@@ -91,13 +99,14 @@ class Packet:
         if data:
             self.unpack(data)
         else:
-            valid_header_fields = [
-                field.name for field in self.HEADER_FIELD_FORMATS]
-            invalid_kwargs = [name for name in kwargs.keys(
-            ) if name not in valid_header_fields]
+            valid_header_fields = [field.name for field in self.HEADER_FIELD_FORMATS]
+            invalid_kwargs = [
+                name for name in kwargs.keys() if name not in valid_header_fields
+            ]
             if invalid_kwargs:
                 logger.warning(
-                    f"Invalid kwargs passed to Packet for keys: {invalid_kwargs}")
+                    f"Invalid kwargs passed to Packet for keys: {invalid_kwargs}"
+                )
 
             for name, value in kwargs.items():
                 if name in valid_header_fields:
@@ -112,8 +121,7 @@ class Packet:
         :param data: The packet packed to a bytes object i.e. by Packet.pack()
         :type data: bytes
         """
-        unpacked_header = struct.unpack(
-            self.header_format, data[:self.header_length])
+        unpacked_header = struct.unpack(self.header_format, data[: self.header_length])
         for field, value in zip(self.HEADER_FIELD_FORMATS, unpacked_header):
             setattr(self, field.name, field.unpack(value))
 
@@ -125,7 +133,7 @@ class Packet:
         :param data: The whole packet as bytes.
         :type data: bytes
         """
-        self.payload = data[self.header_length:]
+        self.payload = data[self.header_length :]
 
     def pack(self):
         """
@@ -135,8 +143,10 @@ class Packet:
         :return: This packet converted to a bytes object.
         :rtype: bytes
         """
-        ordered_header_fields = [field.pack(getattr(self, field.name, None))
-                                 for field in self.HEADER_FIELD_FORMATS]
+        ordered_header_fields = [
+            field.pack(getattr(self, field.name, None))
+            for field in self.HEADER_FIELD_FORMATS
+        ]
         packed = struct.pack(self.header_format, *ordered_header_fields)
         packed += bytes(self.payload)
         return packed
@@ -162,15 +172,24 @@ class Packet:
 
 class EthernetPacket(Packet):
     """An Ethernet packet consisting of destination and source mac address and an ether type."""
+
     HEADER_FIELD_FORMATS = [
-        HeaderField("destination", "6s", None,
-                    util.mac_address_to_bytes, util.mac_address_to_string),
-        HeaderField("source", "6s", None, util.mac_address_to_bytes,
-                    util.mac_address_to_string),
+        HeaderField(
+            "destination",
+            "6s",
+            None,
+            util.mac_address_to_bytes,
+            util.mac_address_to_string,
+        ),
+        HeaderField(
+            "source", "6s", None, util.mac_address_to_bytes, util.mac_address_to_string
+        ),
         HeaderField("ether_type", "H"),
     ]
 
-    def __init__(self, destination=None, source=None, ether_type=None, payload=None, data=None):
+    def __init__(
+        self, destination=None, source=None, ether_type=None, payload=None, data=None
+    ):
         """
         Create a new ethernet packet. If data is given, the packets is initialized by unpacking the data. Otherwise,
         the payload and header fields are initialized from the remaining arguments.
@@ -191,12 +210,17 @@ class EthernetPacket(Packet):
         if data:
             super().__init__(data=data)
         else:
-            super().__init__(destination=destination, source=source,
-                             ether_type=ether_type, payload=payload)
+            super().__init__(
+                destination=destination,
+                source=source,
+                ether_type=ether_type,
+                payload=payload,
+            )
 
 
 class DCPPacket(Packet):
     """A DCP packet"""
+
     HEADER_FIELD_FORMATS = [
         HeaderField("frame_id", "H"),
         HeaderField("service_id", "B"),
@@ -206,8 +230,17 @@ class DCPPacket(Packet):
         HeaderField("length", "H"),
     ]
 
-    def __init__(self, frame_id=None, service_id=None, service_type=None, xid=None,
-                 response_delay=0, length=None, payload=0, data=None):
+    def __init__(
+        self,
+        frame_id=None,
+        service_id=None,
+        service_type=None,
+        xid=None,
+        response_delay=0,
+        length=None,
+        payload=0,
+        data=None,
+    ):
         """
         Create a new DCP packet. If data is given, the packets is initialized by unpacking the data. Otherwise, the
         payload and header fields are initialized from the remaining arguments.
@@ -239,8 +272,15 @@ class DCPPacket(Packet):
             super().__init__(data=data)
         else:
             length = len(payload) if length is None else length
-            super().__init__(frame_id=frame_id, service_id=service_id, service_type=service_type, xid=xid,
-                             response_delay=response_delay, length=length, payload=payload)
+            super().__init__(
+                frame_id=frame_id,
+                service_id=service_id,
+                service_type=service_type,
+                xid=xid,
+                response_delay=response_delay,
+                length=length,
+                payload=payload,
+            )
 
     def unpack_payload(self, data):
         """
@@ -249,11 +289,12 @@ class DCPPacket(Packet):
         :type data: bytes
         """
         payload_end = self.header_length + self.length
-        self.payload = data[self.header_length:payload_end]
+        self.payload = data[self.header_length : payload_end]
 
 
 class DCPBlockRequest(Packet):
     """A DCP block packet for a DCP request (excluded get-requests)."""
+
     HEADER_FIELD_FORMATS = [
         HeaderField("opt", "B"),
         HeaderField("subopt", "B"),
@@ -283,7 +324,9 @@ class DCPBlockRequest(Packet):
             super().__init__(data=data)
         else:
             length = len(payload) if length is None else length
-            if length % 2:  # if the payload has odd length, add one byte padding at the end
+            if (
+                length % 2
+            ):  # if the payload has odd length, add one byte padding at the end
                 payload += bytes([0x00])
             super().__init__(opt=opt, subopt=subopt, length=length, payload=payload)
 
@@ -294,11 +337,12 @@ class DCPBlockRequest(Packet):
         :type data: bytes
         """
         payload_end = self.header_length + self.length
-        self.payload = data[self.header_length:payload_end]
+        self.payload = data[self.header_length : payload_end]
 
 
 class DCPBlockRequestGet(Packet):
     """A DCP block packet only for a DCP get-request."""
+
     HEADER_FIELD_FORMATS = [
         HeaderField("opt", "B"),
         HeaderField("subopt", "B"),
@@ -321,6 +365,7 @@ class DCPBlockRequestGet(Packet):
 
 class DCPBlock(Packet):
     """A DCP block packet."""
+
     HEADER_FIELD_FORMATS = [
         HeaderField("opt", "B"),
         HeaderField("subopt", "B"),
@@ -328,7 +373,9 @@ class DCPBlock(Packet):
         HeaderField("status", "H"),
     ]
 
-    def __init__(self, opt=None, subopt=None, length=None, status=None, payload=0, data=None):
+    def __init__(
+        self, opt=None, subopt=None, length=None, status=None, payload=0, data=None
+    ):
         """
         Create a new DCP block packet. If data is given, the packets is initialized by unpacking the data. Otherwise,
         the payload and header fields are initialized from the remaining arguments.
@@ -353,7 +400,9 @@ class DCPBlock(Packet):
             super().__init__(data=data)
         else:
             length = len(payload) if length is None else length
-            super().__init__(opt=opt, subopt=subopt, length=length, status=status, payload=payload)
+            super().__init__(
+                opt=opt, subopt=subopt, length=length, status=status, payload=payload
+            )
 
     def unpack_payload(self, data):
         """
@@ -362,4 +411,4 @@ class DCPBlock(Packet):
         :type data: bytes
         """
         payload_end = self.header_length + self.length - 2
-        self.payload = data[self.header_length:payload_end]
+        self.payload = data[self.header_length : payload_end]

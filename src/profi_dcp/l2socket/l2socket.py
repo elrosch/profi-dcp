@@ -50,7 +50,8 @@ class L2PcapSocket:
 
 class L2LinuxSocket:
     """An L2 socket using a raw socket from python's socket module."""
-    MTU = 0xffff
+
+    MTU = 0xFFFF
     ETH_P_ALL = 3
 
     def __init__(self, interface, recv_timeout=1, protocol=None, **kwargs):
@@ -67,7 +68,8 @@ class L2LinuxSocket:
         """
         protocol = protocol or self.ETH_P_ALL
         self.socket = socket.socket(
-            socket.AF_PACKET, socket.SOCK_RAW, socket.htons(protocol))
+            socket.AF_PACKET, socket.SOCK_RAW, socket.htons(protocol)
+        )
         self.socket.settimeout(recv_timeout)
         self.socket.bind((interface, 0))
 

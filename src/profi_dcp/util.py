@@ -15,7 +15,7 @@ def mac_address_to_bytes(mac_address):
     :return: The mac address encoded as bytes.
     :rtype: bytes
     """
-    return b''.join(binascii.unhexlify(num) for num in mac_address.split(':'))
+    return b"".join(binascii.unhexlify(num) for num in mac_address.split(":"))
 
 
 def mac_address_to_string(mac_address):
@@ -27,7 +27,7 @@ def mac_address_to_string(mac_address):
     :return: The mac address as ':'-separated lower-case strings.
     :rtype: string
     """
-    return ':'.join(format(num, '02x') for num in mac_address)
+    return ":".join(format(num, "02x") for num in mac_address)
 
 
 def ip_address_to_string(ip_address):
@@ -50,13 +50,14 @@ def ip_address_to_bytes(ip_address):
     :rtype: bytes
     """
     # Validation: an ip address should consist of exactly 4 octets, each an integer between 0 and 255.
-    octets = list(ip_address.split('.'))
+    octets = list(ip_address.split("."))
     if len(octets) != 4:
-        raise ValueError('Provided IP-address of invalid length')
+        raise ValueError("Provided IP-address of invalid length")
     if not all(octet.isdigit() for octet in octets):
-        raise TypeError('Provided invalid IP-octet (non-integer)')
+        raise TypeError("Provided invalid IP-octet (non-integer)")
     if not all(0 <= int(octet) <= 255 for octet in octets):
         raise ValueError(
-            'Provided value exceeds the allowed range of IP octets (0-255)')
+            "Provided value exceeds the allowed range of IP octets (0-255)"
+        )
 
     return socket.inet_aton(ip_address)

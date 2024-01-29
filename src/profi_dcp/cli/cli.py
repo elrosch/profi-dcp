@@ -11,12 +11,16 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Bus specific options
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help='increase output verbosity')
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="increase output verbosity"
+    )
 
-    subparsers = parser.add_subparsers(dest='subcommand', required=True,
-                                       title='subcommands',
-                                       help="Subcommand that should be called")
+    subparsers = parser.add_subparsers(
+        dest="subcommand",
+        required=True,
+        title="subcommands",
+        help="Subcommand that should be called",
+    )
 
     # Options for position
     add_set_ip_parser(subparsers)

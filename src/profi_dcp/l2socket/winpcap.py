@@ -16,67 +16,72 @@ c_string = ctypes.c_char_p
 
 
 class bpf_insn(ctypes.Structure):
-    _fields_ = [("code", ctypes.c_ushort),
-                ("jt", ctypes.c_ubyte),
-                ("jf", ctypes.c_ubyte),
-                ("k", ctypes.c_int)]
+    _fields_ = [
+        ("code", ctypes.c_ushort),
+        ("jt", ctypes.c_ubyte),
+        ("jf", ctypes.c_ubyte),
+        ("k", ctypes.c_int),
+    ]
 
 
 class bpf_program(ctypes.Structure):
-    _fields_ = [('bf_len', ctypes.c_int),
-                ('bf_insns', ctypes.POINTER(bpf_insn))]
+    _fields_ = [("bf_len", ctypes.c_int), ("bf_insns", ctypes.POINTER(bpf_insn))]
 
 
 class timeval(ctypes.Structure):
-    _fields_ = [('tv_sec', ctypes.c_long),
-                ('tv_usec', ctypes.c_long)]
+    _fields_ = [("tv_sec", ctypes.c_long), ("tv_usec", ctypes.c_long)]
 
 
 class pcap_pkthdr(ctypes.Structure):
-    _fields_ = [('ts', timeval),
-                ('caplen', bpf_u_int32),
-                ('len', bpf_u_int32)]
+    _fields_ = [("ts", timeval), ("caplen", bpf_u_int32), ("len", bpf_u_int32)]
 
 
 class sockaddr(ctypes.Structure):
-    _fields_ = [("sa_family", ctypes.c_ushort),
-                ("sa_data", ctypes.c_ubyte * 14)]
+    _fields_ = [("sa_family", ctypes.c_ushort), ("sa_data", ctypes.c_ubyte * 14)]
 
 
 class sockaddr_in(ctypes.Structure):
-    _fields_ = [("sin_family", ctypes.c_ushort),
-                ("sin_port", ctypes.c_uint16),
-                ("sin_addr", 4 * ctypes.c_ubyte)]
+    _fields_ = [
+        ("sin_family", ctypes.c_ushort),
+        ("sin_port", ctypes.c_uint16),
+        ("sin_addr", 4 * ctypes.c_ubyte),
+    ]
 
 
 class sockaddr_in6(ctypes.Structure):
-    _fields_ = [("sin6_family", ctypes.c_ushort),
-                ("sin6_port", ctypes.c_uint16),
-                ("sin6_flowinfo", ctypes.c_uint32),
-                ("sin6_addr", 16 * ctypes.c_ubyte),
-                ("sin6_scope_id", ctypes.c_uint32)]
+    _fields_ = [
+        ("sin6_family", ctypes.c_ushort),
+        ("sin6_port", ctypes.c_uint16),
+        ("sin6_flowinfo", ctypes.c_uint32),
+        ("sin6_addr", 16 * ctypes.c_ubyte),
+        ("sin6_scope_id", ctypes.c_uint32),
+    ]
 
 
 class pcap_addr(ctypes.Structure):
     pass
 
 
-pcap_addr._fields_ = [('next', ctypes.POINTER(pcap_addr)),
-                      ('addr', ctypes.POINTER(sockaddr)),
-                      ('netmask', ctypes.POINTER(sockaddr)),
-                      ('broadaddr', ctypes.POINTER(sockaddr)),
-                      ('dstaddr', ctypes.POINTER(sockaddr))]
+pcap_addr._fields_ = [
+    ("next", ctypes.POINTER(pcap_addr)),
+    ("addr", ctypes.POINTER(sockaddr)),
+    ("netmask", ctypes.POINTER(sockaddr)),
+    ("broadaddr", ctypes.POINTER(sockaddr)),
+    ("dstaddr", ctypes.POINTER(sockaddr)),
+]
 
 
 class pcap_if(ctypes.Structure):
     pass
 
 
-pcap_if._fields_ = [('next', ctypes.POINTER(pcap_if)),
-                    ('name', c_string),
-                    ('description', c_string),
-                    ('addresses', ctypes.POINTER(pcap_addr)),
-                    ('flags', ctypes.c_uint)]
+pcap_if._fields_ = [
+    ("next", ctypes.POINTER(pcap_if)),
+    ("name", c_string),
+    ("description", c_string),
+    ("addresses", ctypes.POINTER(pcap_addr)),
+    ("flags", ctypes.c_uint),
+]
 
 
 def load_dll(library_name):
@@ -91,6 +96,7 @@ class WinPcap:
     Wrapper class for (a subset of) pcap. See e.g. https://www.winpcap.org/docs/docs_412/html/main.html for a more
     detailed documentation of the underlying functionality.
     """
+
     __pcap_dll = None
 
     def __init__(self):
@@ -104,10 +110,9 @@ class WinPcap:
         Will raise an OSError if neither WinPcap nor Npcap can be found.
         """
         if self.__pcap_dll is None:
-            npcap_path = pathlib.Path(
-                os.environ["WINDIR"], "System32", "Npcap")
+            npcap_path = pathlib.Path(os.environ["WINDIR"], "System32", "Npcap")
             if npcap_path.exists():
-                os.environ['PATH'] = f"{npcap_path};{os.environ['PATH']}"
+                os.environ["PATH"] = f"{npcap_path};{os.environ['PATH']}"
                 load_dll("Packet")
             self.__pcap_dll = load_dll("wpcap")
 
@@ -126,12 +131,16 @@ class WinPcap:
         """
         self._pcap_open_live = self.__pcap_dll.pcap_open_live
         self._pcap_open_live.argtypes = [
-            c_string, ctypes.c_int, ctypes.c_int, ctypes.c_int, c_string]
+            c_string,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_int,
+            c_string,
+        ]
         self._pcap_open_live.restype = ctypes.POINTER(pcap_t)
 
         self._pcap_setmintocopy = self.__pcap_dll.pcap_setmintocopy
-        self._pcap_setmintocopy.argtype = [
-            ctypes.POINTER(pcap_t), ctypes.c_int]
+        self._pcap_setmintocopy.argtype = [ctypes.POINTER(pcap_t), ctypes.c_int]
         self._pcap_setmintocopy.restype = ctypes.c_int
 
         self._pcap_close = self.__pcap_dll.pcap_close
@@ -139,31 +148,46 @@ class WinPcap:
         self._pcap_close.restype = None
 
         self._pcap_next_ex = self.__pcap_dll.pcap_next_ex
-        self._pcap_next_ex.argtypes = [ctypes.POINTER(pcap_t), ctypes.POINTER(ctypes.POINTER(pcap_pkthdr)),
-                                       ctypes.POINTER(ctypes.POINTER(u_char))]
+        self._pcap_next_ex.argtypes = [
+            ctypes.POINTER(pcap_t),
+            ctypes.POINTER(ctypes.POINTER(pcap_pkthdr)),
+            ctypes.POINTER(ctypes.POINTER(u_char)),
+        ]
         self._pcap_next_ex.restype = ctypes.c_int
 
         self._pcap_sendpacket = self.__pcap_dll.pcap_sendpacket
         self._pcap_sendpacket.argtypes = [
-            ctypes.POINTER(pcap_t), ctypes.c_void_p, ctypes.c_int]
+            ctypes.POINTER(pcap_t),
+            ctypes.c_void_p,
+            ctypes.c_int,
+        ]
         self._pcap_sendpacket.restype = ctypes.c_int
 
         self._pcap_compile = self.__pcap_dll.pcap_compile
-        self._pcap_compile.argtypes = [ctypes.POINTER(pcap_t), ctypes.POINTER(bpf_program), c_string, ctypes.c_int,
-                                       bpf_u_int32]
+        self._pcap_compile.argtypes = [
+            ctypes.POINTER(pcap_t),
+            ctypes.POINTER(bpf_program),
+            c_string,
+            ctypes.c_int,
+            bpf_u_int32,
+        ]
         self._pcap_compile.restype = ctypes.c_int
 
         self._pcap_setfilter = self.__pcap_dll.pcap_setfilter
         self._pcap_setfilter.argtypes = [
-            ctypes.POINTER(pcap_t), ctypes.POINTER(bpf_program)]
+            ctypes.POINTER(pcap_t),
+            ctypes.POINTER(bpf_program),
+        ]
         self._pcap_setfilter.restype = ctypes.c_int
 
         self._pcap_findalldevs = self.__pcap_dll.pcap_findalldevs
         self._pcap_findalldevs.argtypes = [
-            ctypes.POINTER(ctypes.POINTER(pcap_if)), c_string]
+            ctypes.POINTER(ctypes.POINTER(pcap_if)),
+            c_string,
+        ]
         self._pcap_findalldevs.restype = ctypes.c_int
 
-    def pcap_open_live(self, device, to_ms, snaplen=0xffff, promisc=0):
+    def pcap_open_live(self, device, to_ms, snaplen=0xFFFF, promisc=0):
         """
         Create a pcap object and start capturing.
         :param device: The network device to open.
@@ -182,8 +206,7 @@ class WinPcap:
         """
         device_buffer = ctypes.create_string_buffer(device.encode("utf8"))
         error_buffer = ctypes.create_string_buffer(256)
-        p = self._pcap_open_live(
-            device_buffer, snaplen, promisc, to_ms, error_buffer)
+        p = self._pcap_open_live(device_buffer, snaplen, promisc, to_ms, error_buffer)
 
         # Check for potential errors
         error = bytes(bytearray(error_buffer)).strip(b"\x00")
@@ -257,8 +280,7 @@ class WinPcap:
         :return: -1 on error (0 on success?)
         :rtype: int
         """
-        filter_buffer = ctypes.create_string_buffer(
-            filter_string.encode("utf8"))
+        filter_buffer = ctypes.create_string_buffer(filter_string.encode("utf8"))
         return self._pcap_compile(p, fp, filter_buffer, optimize, netmask)
 
     def pcap_setfilter(self, p, fp):

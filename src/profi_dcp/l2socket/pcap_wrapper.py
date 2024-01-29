@@ -5,7 +5,14 @@ All Rights Reserved.
 """
 from collections import namedtuple
 
-from profi_dcp.l2socket.winpcap import WinPcap, bpf_program, pcap_pkthdr, pcap_if, sockaddr_in, sockaddr_in6
+from profi_dcp.l2socket.winpcap import (
+    WinPcap,
+    bpf_program,
+    pcap_pkthdr,
+    pcap_if,
+    sockaddr_in,
+    sockaddr_in6,
+)
 from profi_dcp.utils.logging import Logging
 import ctypes
 import socket
@@ -13,8 +20,7 @@ import ipaddress
 import time
 
 IPv4Address = namedtuple("IPv4Address", ["port", "ip_address"])
-IPv6Address = namedtuple(
-    "IPv6Address", ["port", "flow_info", "ip_address", "scope_id"])
+IPv6Address = namedtuple("IPv6Address", ["port", "flow_info", "ip_address", "scope_id"])
 
 
 class SocketAddress:
@@ -37,13 +43,15 @@ class SocketAddress:
         self.address = None
         if self.address_family == socket.AF_INET:
             socket_address = ctypes.cast(
-                socket_address_p, ctypes.POINTER(sockaddr_in)).contents
+                socket_address_p, ctypes.POINTER(sockaddr_in)
+            ).contents
             port = socket_address.sin_port
             ip_address = self.__parse_ip_address(socket_address.sin_addr)
             self.address = IPv4Address(port, ip_address)
         elif self.address_family == socket.AF_INET6:
             socket_address = ctypes.cast(
-                socket_address_p, ctypes.POINTER(sockaddr_in6)).contents
+                socket_address_p, ctypes.POINTER(sockaddr_in6)
+            ).contents
             port = socket_address.sin6_port
             flow_info = socket_address.sin6_flowinfo
             scope_id = socket_address.sin6_scope_id
@@ -87,10 +95,8 @@ class PcapAddress:
         """
         self.address = self.__parse_address(pcap_addr.contents.addr)
         self.netmask = self.__parse_address(pcap_addr.contents.netmask)
-        self.broadcast_address = self.__parse_address(
-            pcap_addr.contents.broadaddr)
-        self.destination_address = self.__parse_address(
-            pcap_addr.contents.dstaddr)
+        self.broadcast_address = self.__parse_address(pcap_addr.contents.broadaddr)
+        self.destination_address = self.__parse_address(pcap_addr.contents.dstaddr)
 
     @staticmethod
     def __parse_address(address_pointer):
@@ -109,8 +115,10 @@ class PcapAddress:
         :return: String representation of the address.
         :rtype: string
         """
-        return f"PcapAddress[address={self.address}, netmask={self.netmask}, " \
-               f"broadcast_address={self.broadcast_address}, destination_address={self.destination_address}]"
+        return (
+            f"PcapAddress[address={self.address}, netmask={self.netmask}, "
+            f"broadcast_address={self.broadcast_address}, destination_address={self.destination_address}]"
+        )
 
 
 class PcapDevice:
@@ -127,9 +135,12 @@ class PcapDevice:
         """
         pcap_device = pcap_if_p.contents
 
-        self.name = pcap_device.name.decode('iso-8859-1', errors='replace')
-        self.description = pcap_device.description.decode(
-            'iso-8859-1', errors='replace') if pcap_device.description else ""
+        self.name = pcap_device.name.decode("iso-8859-1", errors="replace")
+        self.description = (
+            pcap_device.description.decode("iso-8859-1", errors="replace")
+            if pcap_device.description
+            else ""
+        )
 
         self.addresses = []
         next_address = pcap_device.addresses
@@ -147,8 +158,10 @@ class PcapDevice:
         :return: String representation of the device.
         :rtype: string
         """
-        return f"PcapDevice[name='{self.name}', description='{self.description}', " \
-               f"addresses={[str(addr) for addr in self.addresses]}, flags={self.flags}]"
+        return (
+            f"PcapDevice[name='{self.name}', description='{self.description}', "
+            f"addresses={[str(addr) for addr in self.addresses]}, flags={self.flags}]"
+        )
 
 
 class PcapWrapper:
@@ -181,6 +194,7 @@ class PcapWrapper:
         :return: The device name or None if no such devices was found.
         :rtype: Optional(string)
         """
+
         def filter_by_ip(device):
             for address in device.addresses:
                 if address.address.address.ip_address == ip:
@@ -188,12 +202,12 @@ class PcapWrapper:
             return False
 
         all_devices = self.get_all_devices()
-        filtered_devices = [
-            device for device in all_devices if filter_by_ip(device)]
+        filtered_devices = [device for device in all_devices if filter_by_ip(device)]
 
         if not filtered_devices:
             Logging.logger.debug(
-                f"No pcap device with ip {ip} found in {[str(device) for device in all_devices]}")
+                f"No pcap device with ip {ip} found in {[str(device) for device in all_devices]}"
+            )
             return None
         else:
             return filtered_devices[0].name
@@ -232,7 +246,7 @@ class PcapWrapper:
         if result <= 0:  # error or timeout
             return None
         # extract and return the packet data
-        return bytes(bytearray(pkt_data[:header.contents.len]))
+        return bytes(bytearray(pkt_data[: header.contents.len]))
 
     def set_bpf_filter(self, bpf_filter):
         """

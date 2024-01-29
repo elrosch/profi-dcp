@@ -6,10 +6,9 @@ All Rights Reserved.
 import sys
 from .l2socket import L2PcapSocket, L2LinuxSocket
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     L2Socket = L2PcapSocket
-elif sys.platform.startswith('linux'):
+elif sys.platform.startswith("linux"):
     L2Socket = L2LinuxSocket
 else:
-    raise NotImplementedError(
-        f"Platform {sys.platform} is currently not supported.")
+    raise NotImplementedError(f"Platform {sys.platform} is currently not supported.")
