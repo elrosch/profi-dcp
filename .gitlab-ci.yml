@@ -57,6 +57,17 @@ lint-test-job:   # This job also runs in the test stage.
     - pylint src
   allow_failure: true
 
+black-job:   # This job also runs in the test stage.
+  stage: test    # It can run at the same time as unit-test-job (in parallel).
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  before_script:
+    - python -m pip install black
+    - python -m pip install .
+  script:
+    - black src --check
+
 deploy-job:
   stage: upload
   rules:
