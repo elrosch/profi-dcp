@@ -45,7 +45,7 @@ unit-test-job:   # This job runs in the test stage.
 
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
 
-lint-test-job:   # This job also runs in the test stage.
+pylint-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   rules:
     - if: $CI_PIPELINE_SOURCE == 'push'
@@ -68,6 +68,38 @@ black-job:   # This job also runs in the test stage.
   script:
     - black src --check
 
+sphinx-docs:
+  stage: docs
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  before_script:
+    - pip install -U pip sphinx sphinx-rtd-theme myst-parser
+    - pip install .
+  script:
+    - mkdir public
+    - sphinx-apidoc -f -o docs/source src
+    - make -C docs html || exit_code=$?
+    - >
+      if [[ $exit_code -ne 0 ]]; then
+        echo "Sphinx-build failure"
+        exit 1
+      else
+        echo "Sphinx-build success"
+        mv docs/build/html/* public
+      fi
+  artifacts:
+    paths:
+      - public
+
+changelog-test-job:
+  stage: changelogtest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  script:
+    - git fetch --all
+    - if [ 0 -eq $(git diff --name-only origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}...${CI_COMMIT_SHA} CHANGELOG.md | wc -l) ]; then exit 1; fi
+
 deploy-job:
   stage: upload
   rules:
@@ -85,7 +117,8 @@ deploy-job:
       - public
   needs:
     - unit-test-job
-    - lint-test-job
+    - pylint-job
+    - black-job
 
 gitlab-release-job:
   stage: upload
@@ -99,3 +132,18 @@ gitlab-release-job:
     description: './public/RELEASENOTES.md'
   needs:
     - deploy-job
+
+pages:
+  image: alpine:latest
+  stage: upload
+  rules:
+  - if: '$CI_COMMIT_BRANCH == "main"'
+
+  script:
+    - echo 'Nothing to do...'
+  artifacts:
+    paths:
+        - public
+
+  needs: ["sphinx-docs"]
+
