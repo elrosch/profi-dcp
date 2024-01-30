@@ -117,7 +117,7 @@ deploy-job:
       - public
   needs:
     - unit-test-job
-    - lint-job
+    - pylint-job
     - black-job
 
 gitlab-release-job:
