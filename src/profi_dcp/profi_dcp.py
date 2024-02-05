@@ -55,6 +55,11 @@ class Device:
         parameters = [f"{name}={value}" for name, value in vars(self).items()]
         return f"Device({', '.join(parameters)})"
 
+    def to_log(self):
+        Logging.logger.info(f"Device '{self.name_of_station}':")
+        for key, value in self.__dict__.items():
+            Logging.logger.info(f"\t{key}: '{value}'")
+
 
 class DCP:
     """
@@ -114,7 +119,8 @@ class DCP:
         for network_interface, addresses in psutil.net_if_addrs().items():
             addresses_by_family = {}
             for address in addresses:
-                addresses_by_family.setdefault(address.family, []).append(address)
+                addresses_by_family.setdefault(
+                    address.family, []).append(address)
 
             # try to match either ipv4 or ipv6 address, ipv6 addresses may have additional suffix
             ipv4_match = any(
@@ -126,7 +132,8 @@ class DCP:
                 for address in addresses_by_family.get(socket.AF_INET6, [])
             )
 
-            network = ipaddress.ip_network(f"{ip_address}/{subnet_mask}", strict=False)
+            network = ipaddress.ip_network(
+                f"{ip_address}/{subnet_mask}", strict=False)
             network_match = any(
                 ipaddress.ip_address(address.address) in network
                 for address in addresses_by_family.get(socket.AF_INET, [])
@@ -159,7 +166,8 @@ class DCP:
         Logging.logger.debug(
             f"Could not find a network interface for ip {ip_address} in {psutil.net_if_addrs()}"
         )
-        raise ValueError(f"Could not find a network interface for ip {ip_address}.")
+        raise ValueError(
+            f"Could not find a network interface for ip {ip_address}.")
 
     def identify_all(self, timeout=None):
         """
@@ -214,7 +222,8 @@ class DCP:
 
         response = self.__read_response()
         if not response:
-            Logging.logger.debug(f"Timeout: no answer from device with MAC {mac}")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac}")
             raise DcpTimeoutError
         return response
 
@@ -311,11 +320,13 @@ class DCP:
         :rtype: string
         """
         option, suboption = Option.IP_ADDRESS
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.GET, option, suboption)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.GET, option, suboption)
 
         response = self.__read_response()
         if not response:
-            Logging.logger.debug(f"Timeout: no answer from device with MAC {mac}")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac}")
             raise DcpTimeoutError
         return response.IP
 
@@ -328,11 +339,13 @@ class DCP:
         :rtype: string
         """
         option, suboption = Option.NAME_OF_STATION
-        self.__send_request(mac, FrameID.GET_SET, ServiceID.GET, option, suboption)
+        self.__send_request(mac, FrameID.GET_SET,
+                            ServiceID.GET, option, suboption)
 
         response = self.__read_response()
         if not response:
-            Logging.logger.debug(f"Timeout: no answer from device with MAC {mac}")
+            Logging.logger.debug(
+                f"Timeout: no answer from device with MAC {mac}")
             raise DcpTimeoutError
         return response.name_of_station
 
@@ -361,7 +374,8 @@ class DCP:
             )
             raise DcpTimeoutError
         elif not response:
-            Logging.logger.debug(f"LED flashing unsuccessful: {response.get_message()}")
+            Logging.logger.debug(
+                f"LED flashing unsuccessful: {response.get_message()}")
 
         return response
 
@@ -391,7 +405,8 @@ class DCP:
             )
             raise DcpTimeoutError
         elif not response:
-            Logging.logger.debug(f"Reset unsuccessful: {response.get_message()}")
+            Logging.logger.debug(
+                f"Reset unsuccessful: {response.get_message()}")
 
         return response
 
@@ -418,7 +433,8 @@ class DCP:
             )
             raise DcpTimeoutError
         elif not response:
-            Logging.logger.debug(f"Reset unsuccessful: {response.get_message()}")
+            Logging.logger.debug(
+                f"Reset unsuccessful: {response.get_message()}")
 
         return response
 
@@ -450,7 +466,8 @@ class DCP:
         :type response_delay: int
         """
         self.__xid += (
-            1  # increment the XID wih each request (used to identify a transaction)
+            # increment the XID wih each request (used to identify a transaction)
+            1
         )
 
         # Construct the DCPBlockRequest
@@ -502,7 +519,8 @@ class DCP:
             received_packet = self.__receive_packet()
 
             if received_packet:
-                parsed_response = self.__parse_raw_packet(received_packet, set_request)
+                parsed_response = self.__parse_raw_packet(
+                    received_packet, set_request)
                 if parsed_response is not None:
                     return parsed_response
 
@@ -561,7 +579,7 @@ class DCP:
         while length > 6:
             device, block_len = self.__process_block(dcp_blocks, device)
             # advance to the start of the next block
-            dcp_blocks = dcp_blocks[block_len + 4 :]
+            dcp_blocks = dcp_blocks[block_len + 4:]
             length -= 4 + block_len
 
         return device
