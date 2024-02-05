@@ -20,7 +20,7 @@ def add_identify_parser(subparsers):
         "-m",
         "--mac",
         default=None,
-        help="MAC address of device that should be identified (default: %(default)s)."
+        help="MAC address of device that should be identified (default: %(default)s).",
     )
 
 
@@ -35,8 +35,7 @@ def identify_func(args):
 
     if args.mac:
         try:
-            device = next(
-                dev for dev in identified_devices if dev.MAC == args.mac)
+            device = next(dev for dev in identified_devices if dev.MAC == args.mac)
             device.to_log()
         except StopIteration:
             Logging.logger.error(f"MAC {args.mac} not found")

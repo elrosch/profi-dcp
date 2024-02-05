@@ -38,7 +38,10 @@ def add_set_ip_parser(subparsers):
         "If None, pick first or first unconfigured from list (depending on -u value). (default: %(default)s).",
     )
     parser_set_ip.add_argument(
-        "-u", "--only-unconfigured", action="store_true", help="Only set IP for first unconfigured device in list."
+        "-u",
+        "--only-unconfigured",
+        action="store_true",
+        help="Only set IP for first unconfigured device in list.",
     )
 
 
@@ -53,8 +56,7 @@ def set_ip_func(args):
 
     if args.mac:
         try:
-            device = next(
-                dev for dev in identified_devices if dev.MAC == args.mac)
+            device = next(dev for dev in identified_devices if dev.MAC == args.mac)
             device.to_log()
         except StopIteration:
             Logging.logger.error(f"MAC {args.mac} not found")
@@ -66,8 +68,7 @@ def set_ip_func(args):
         device = identified_devices[0]
         if args.only_unconfigured:
             try:
-                device = next(
-                    dev for dev in identified_devices if dev.IP == "0.0.0.0")
+                device = next(dev for dev in identified_devices if dev.IP == "0.0.0.0")
                 device.to_log()
             except StopIteration:
                 Logging.logger.error(f"No unconfigured device found")
@@ -80,7 +81,6 @@ def set_ip_func(args):
         mac=device.MAC, ip_conf=ip_conf, store_permanent=args.permanent
     )
     if not response:
-        Logging.logger.error(
-            f"Setting of ip address failed: {response.get_message()}")
+        Logging.logger.error(f"Setting of ip address failed: {response.get_message()}")
         return
     Logging.logger.info(f"Successfully applied {ip_conf}")
