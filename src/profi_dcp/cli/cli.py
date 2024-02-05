@@ -3,6 +3,7 @@
 import argparse
 import logging
 from profi_dcp.cli.set_ip import add_set_ip_parser
+from profi_dcp.cli.identify import add_identify_parser
 from profi_dcp.utils.logging import Logging
 
 
@@ -23,7 +24,10 @@ def main():
         help="Subcommand that should be called",
     )
 
-    # Options for position
+    # Options for identify
+    add_identify_parser(subparsers)
+
+    # Options for set-ip
     add_set_ip_parser(subparsers)
 
     args = parser.parse_args()

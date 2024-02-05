@@ -55,6 +55,11 @@ class Device:
         parameters = [f"{name}={value}" for name, value in vars(self).items()]
         return f"Device({', '.join(parameters)})"
 
+    def to_log(self):
+        Logging.logger.info(f"Device '{self.name_of_station}':")
+        for key, value in self.__dict__.items():
+            Logging.logger.info(f"\t{key}: '{value}'")
+
 
 class DCP:
     """
@@ -450,7 +455,8 @@ class DCP:
         :type response_delay: int
         """
         self.__xid += (
-            1  # increment the XID wih each request (used to identify a transaction)
+            # increment the XID wih each request (used to identify a transaction)
+            1
         )
 
         # Construct the DCPBlockRequest

@@ -35,14 +35,14 @@ def add_set_ip_parser(subparsers):
         "--mac",
         default=None,
         help="MAC address of device that should be configured."
-        "If None, pick first without IP. (default: %(default)s).",
+        "If None, pick first or first unconfigured from list (depending on -u value). (default: %(default)s).",
     )
-
-
-def log_device(device):
-    Logging.logger.info(f"Device '{device.name_of_station}':")
-    for key, value in device.__dict__.items():
-        Logging.logger.info(f"\t{key}: {value}")
+    parser_set_ip.add_argument(
+        "-u",
+        "--only-unconfigured",
+        action="store_true",
+        help="Only set IP for first unconfigured device in list.",
+    )
 
 
 def set_ip_func(args):
@@ -50,17 +50,29 @@ def set_ip_func(args):
     dcp = DCP(args.ip_address)
 
     identified_devices = dcp.identify_all()
-    Logging.logger.info(f"Found {len(identified_devices)} devices:")
-    for dev in identified_devices:
-        log_device(dev)
+    if not identified_devices:
+        Logging.logger.error(f"No devices found")
+        return
 
-    device = identified_devices[0]
     if args.mac:
         try:
             device = next(dev for dev in identified_devices if dev.MAC == args.mac)
+            device.to_log()
         except StopIteration:
             Logging.logger.error(f"MAC {args.mac} not found")
             return
+    else:
+        Logging.logger.info(f"Found {len(identified_devices)} devices:")
+        for dev in identified_devices:
+            dev.to_log()
+        device = identified_devices[0]
+        if args.only_unconfigured:
+            try:
+                device = next(dev for dev in identified_devices if dev.IP == "0.0.0.0")
+                device.to_log()
+            except StopIteration:
+                Logging.logger.error(f"No unconfigured device found")
+                return
 
     Logging.logger.info(f"Set ip address for '{device.name_of_station}'")
 
