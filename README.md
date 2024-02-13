@@ -2,7 +2,7 @@
 
 A simple Python library to send and receive messages with the Profinet Discovery and basic Configuration Protocol (DCP) protocol.
 It can send requests and parse the corresponding responses to identify devices over the network, get and set their parameters or reset them to factory settings.
-Documentation can be found [here](https://gitlab.com/EvilEli/profi-dcp) and in the [examples](./examples) directory.
+Documentation can be found [here](https://profinet-dcp-evileli-d85b3cec0c8c34ea4cf0296dc0474a82da67a09ab0.gitlab.io/) and in the [examples](./examples) directory.
 
 **This is a fork from [pnio_dcp](https://gitlab.com/pyshacks/pnio_dcp).**
 
@@ -41,11 +41,12 @@ On Linux, no additional installations are required since raw sockets are used in
 ### Other Operating Systems
 PNIO-DCP has not been tested on any other operating systems besides Windows and Linux.
 
-### [CLI](https://gitlab.com/EvilEli/profi-dcp) - [`cli`](https://gitlab.com/EvilEli/profi-dcp)
+### [CLI](https://profinet-dcp-evileli-d85b3cec0c8c34ea4cf0296dc0474a82da67a09ab0.gitlab.io/profi_dcp.cli.html)
 `profi-dcp` is the main entry point to the CLI.
 It supports various subcommands which execute some basic functions.
 
 For more information use the help flag  (`profi-dcp -h`).
 
 #### Subcommands
+- `identify` is a subcommand to identify devices.
 - `set-ip` is a subcommand to set a new ip address for a device.
